@@ -47,3 +47,9 @@ As a safeguard, try to add **at least one reviewer** (whoever you think is appro
 > `<type>: <short summary> [<jira ticket>]`
 
 - Can omit `[<jira ticket>]` if the PR isn't related to a jira ticket (like if it's a hotfix that just came up during development)
+
+##### PR Description
+
+- The template in `.github/PULL_REQUEST_TEMPLATE` will automatically show up in the description when you create a PR.
+- Under the **`What did you change?`** section, add the appropriate bullet points (and delete unused ones).
+- Go through the **`To Do Checklist`** section and mark the completed items. Ideally all items are checked when creating a PR.
