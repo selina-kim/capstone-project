@@ -2,15 +2,15 @@
 
 -- User
 create table Users (
-    u_id serial primary key,
+    u_id varchar(255) primary key,
     email varchar(255) unique not null,
     display_name varchar(30) not null,
-    timezone varchar(50),
+    timezone varchar(50) not null,
     new_cards_per_day integer default 20,
     review_cards_per_day integer default 50
 );
 -- column definitions:
--- u_id: primary key, storing user id
+-- u_id: primary key, storing user id from 'sub' field in Google ID Token
 -- email: user's email address
 -- display_name: user's chosen name to use in app
 -- new_cards_per_day: number of new cards user wants to learn per day, default is 20
