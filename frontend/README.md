@@ -32,6 +32,7 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
 1. Install frontend node dependencies
 
    ```bash
+   cd frontend
    npm install
    ```
 
