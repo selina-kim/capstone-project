@@ -1,6 +1,6 @@
 from flask import Flask
-from src.routes.dictionary import *
-from src.routes.translate import *
+from routes.dictionary import *
+from routes.translate import *
 from dotenv import load_dotenv
 
 load_dotenv()

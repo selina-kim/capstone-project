@@ -1,22 +1,54 @@
-import requests, os, re
+import requests
+import os
+import re
 
-MW_DICT_API_KEY = os.getenv("MW_DICT_API_KEY")
-
-# Call Merriam-Webster Dictionary API to extract english example sentences, pronunciation, audio url, and definitions for a word
+# call Merriam-Webster Dictionary API to extract english example sentences, pronunciation, audio url, and definitions for a word
+# documentation: https://dictionaryapi.com/products/json
 def call_dictionary_api(word):
+    MW_DICT_API_KEY = os.getenv("MW_DICT_API_KEY")
     url = f"https://dictionaryapi.com/api/v3/references/collegiate/json/{word}?key={MW_DICT_API_KEY}"
-    response = requests.get(url)
-    response.encoding = 'utf-8'
+    
+    try:
+        response = requests.get(url, timeout=10)
+        response.encoding = 'utf-8'
+    except requests.exceptions.Timeout:
+        return {"error": "Request timeout"}, 504
+    except requests.exceptions.ConnectionError:
+        return {"error": "Network connection error"}, 503
+    except requests.exceptions.RequestException as e:
+        return {"error": f"Request failed: {str(e)}"}, 500
 
+    if response.status_code == 429:
+        return {"error": "Rate limit exceeded"}, 429
+    
     if response.status_code != 200:
         return {"error": "Failed to fetch data"}, response.status_code
 
-    data = response.json()
+    # try to parse JSON response
+    try:
+        data = response.json()
+    except requests.exceptions.JSONDecodeError:
+        # API returned non-JSON
+        return {"error": f"Invalid API response: {response.text}"}, 400
 
-    # Parse response data
+    # check if word was not found (API returns list of string suggestions)
+    if data and isinstance(data[0], str):
+        return {
+            "word": word,
+            "definitions": [{"definition": "Word not found", "example_sentences": []}],
+            "pronunciation": None,
+            "audio_url": None,
+            "suggestions": data
+        }
+
+    # initialize variables
+    pronunciation = None
+    audio_url = None
+    structured_defs = []
+
+    # parse response data
     try:
         entry = data[0]
-        pronunciation = None
 
         # get pronunciation
         try:
@@ -25,7 +57,6 @@ def call_dictionary_api(word):
             pass
 
         # get audio URL
-        audio_url = None
         try:
             audio = entry["hwi"]["prs"][0]["sound"]["audio"]
             if audio.startswith("bix"):
@@ -40,7 +71,7 @@ def call_dictionary_api(word):
         except (KeyError, IndexError):
             pass
 
-        # Helper to clean MW markup
+        # helper to clean MW markup
         def clean_text(text):
             if not text:
                 return None
@@ -51,9 +82,6 @@ def call_dictionary_api(word):
             text = re.sub(r"\{.*?\}", "", text)
             text = text.replace("\u0027", "'")
             return text.strip()
-
-        # structured list of definition/example pairs
-        structured_defs = []
 
         # extract definitions and example sentences
         if "def" in entry:
@@ -81,9 +109,13 @@ def call_dictionary_api(word):
                                     if last_obj:
                                         last_obj["example_sentences"].extend(examples)
 
-        # Fallback to shortdef if nothing found
+        # fallback to shortdef if nothing found
         if not structured_defs and "shortdef" in entry:
             structured_defs = [{"definition": clean_text(d), "example_sentences": []} for d in entry["shortdef"]]
+
+        # fallback for nothing found
+        if not structured_defs:
+            structured_defs = [{"definition": "Definition not found", "example_sentences": []}]
 
     except (KeyError, IndexError, TypeError):
         return {

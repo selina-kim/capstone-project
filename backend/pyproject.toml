@@ -8,10 +8,6 @@ authors = [
     "Giovanna Gerada", 
     "Stella Gu", 
     "Tinu Joseph"]
-packages = [
-    { include = "services", from = "src" },
-    { include = "routes", from = "src" }
-]
 license = "MIT"
 readme = "README.md"
 
@@ -29,6 +25,13 @@ python-dotenv = "^1.2.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.2"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+addopts = "-m 'not integration'"
+markers = [
+    "integration: marks tests as integration tests (deselect with '-m \"not integration\"')"
+]
 
 [build-system]
 requires = ["poetry-core>=2.2.0"]
