@@ -16,7 +16,10 @@ export default function TabLayout() {
         tabBarInactiveBackgroundColor: COLORS.accent.primary,
         tabBarActiveBackgroundColor: COLORS.accent.primary,
         tabBarLabelPosition: "beside-icon",
-        // tabBarStyle: { borderTopWidth: 0 },
+        tabBarStyle: { borderTopWidth: 0 },
+        sceneStyle: {
+          backgroundColor: COLORS.background,
+        },
       }}
     >
       <Tabs.Screen
