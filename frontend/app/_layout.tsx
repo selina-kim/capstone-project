@@ -1,5 +1,8 @@
 import { Stack } from "expo-router";
 import { COLORS } from "@/constants/colors";
+import { AppLogo } from "@/assets/AppLogo";
+import { View } from "react-native";
+import { ProfileIcon } from "@/assets/icons/ProfileIcon";
 
 export default function RootLayout() {
   return (
@@ -10,7 +13,12 @@ export default function RootLayout() {
         },
         headerTintColor: COLORS.text.primary,
         headerShadowVisible: false,
-        headerTitle: "Languine",
+        headerTitle: () => <AppLogo width={100} />,
+        headerRight: () => (
+          <View style={{ marginHorizontal: 15 }}>
+            <ProfileIcon />
+          </View>
+        ),
       }}
     >
       <Stack.Screen name="(tabs)" options={{ headerShown: true }} />
