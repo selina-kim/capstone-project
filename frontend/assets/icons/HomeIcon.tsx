@@ -1,6 +1,6 @@
 import { COLORS } from "@/constants/colors";
 import React from "react";
-import { Svg, Path } from "react-native-svg";
+import { Path, Svg } from "react-native-svg";
 
 export const HomeIcon: React.FC<{
   stroke?: string;

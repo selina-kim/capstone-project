@@ -1,7 +1,7 @@
 import React from "react";
-import { Svg, Path } from "react-native-svg";
+import { Path, Svg } from "react-native-svg";
 
-export const AppLogo: React.FC<{}> = () => (
+export const AppLogo: React.FC = () => (
   <Svg width="100%" height="fit-content" viewBox="0 0 99 30" fill="none">
     <mask
       id="path-1-outside-1_2119_1338"

@@ -1,6 +1,6 @@
 import { COLORS } from "@/constants/colors";
 import React from "react";
-import { Svg, Path, Ellipse } from "react-native-svg";
+import { Ellipse, Path, Svg } from "react-native-svg";
 
 export const HelpIcon: React.FC<{
   stroke?: string;
