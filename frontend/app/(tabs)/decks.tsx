@@ -1,4 +1,5 @@
-import { Text, View } from "react-native";
+import { NoDecksBanner } from "@/components/features/decks/NoDecksBanner";
+import { View } from "react-native";
 
 export default function Decks() {
   return (
@@ -7,9 +8,10 @@ export default function Decks() {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
+        padding: 10,
       }}
     >
-      <Text>decks page</Text>
+      <NoDecksBanner />
     </View>
   );
 }
