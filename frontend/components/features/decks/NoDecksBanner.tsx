@@ -9,7 +9,7 @@ export const NoDecksBanner = () => (
       style={{
         display: "flex",
         rowGap: "10px",
-        paddingVertical: 20,
+        paddingVertical: 30,
       }}
     >
       <View style={{ width: 64, marginHorizontal: "auto" }}>
@@ -36,7 +36,7 @@ export const NoDecksBanner = () => (
           flexDirection: "row",
           maxWidth: 200,
           marginHorizontal: "auto",
-          marginTop: 15,
+          marginTop: 20,
           columnGap: 5,
         }}
       >
