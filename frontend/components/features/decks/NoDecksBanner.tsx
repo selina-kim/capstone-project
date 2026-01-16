@@ -34,13 +34,15 @@ export const NoDecksBanner = () => (
           borderRadius: 8,
           display: "flex",
           flexDirection: "row",
-          maxWidth: 200,
           marginHorizontal: "auto",
           marginTop: 20,
           columnGap: 5,
+          alignItems: "center",
         }}
       >
-        <PlusIcon />
+        <View style={{ minWidth: "auto" }}>
+          <PlusIcon />
+        </View>
         <Text
           style={{
             color: COLORS.text.primary,

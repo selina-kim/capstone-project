@@ -1,8 +1,8 @@
-import { Stack } from "expo-router";
-import { COLORS } from "@/constants/colors";
 import { AppLogo } from "@/assets/AppLogo";
-import { Pressable, View } from "react-native";
 import { ProfileIcon } from "@/assets/icons/ProfileIcon";
+import { COLORS } from "@/constants/colors";
+import { Stack } from "expo-router";
+import { Pressable, View } from "react-native";
 
 export default function RootLayout() {
   return (
