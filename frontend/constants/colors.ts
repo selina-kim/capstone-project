@@ -15,6 +15,10 @@ const lightTheme = {
     secondary: "#399BEB",
     delete: "#D41605",
   },
+  button: {
+    fillPrimary: "#FFBA26",
+    fillSecondary: "#FFFCF9",
+  },
 } as const;
 
 export const THEMES = {
