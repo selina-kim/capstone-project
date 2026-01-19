@@ -1,5 +1,7 @@
 const lightTheme = {
-  background: "#FFFCF9",
+  backgroundPrimary: "#FFFCF9",
+  backgroundSecondary: "#FFF5DB",
+  backgroundTertiary: "#FCE6B1",
   icon: {
     outlinePrimary: "#8D481C",
     outlineSecondary: "#FFBA26",
@@ -9,6 +11,7 @@ const lightTheme = {
   text: {
     primary: "#5C2C0E",
     secondary: "#8D481C",
+    tertiary: "#bc8b63",
   },
   accent: {
     primary: "#FFBA26",

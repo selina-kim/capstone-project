@@ -18,7 +18,7 @@ export default function TabLayout() {
         tabBarLabelPosition: "beside-icon",
         tabBarStyle: { borderTopWidth: 0 },
         sceneStyle: {
-          backgroundColor: COLORS.background,
+          backgroundColor: COLORS.backgroundPrimary,
         },
       }}
     >

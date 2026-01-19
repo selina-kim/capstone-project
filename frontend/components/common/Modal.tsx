@@ -24,7 +24,7 @@ export const Modal = ({
   closeLabel = "Cancel",
 }: ModalProps) => {
   const Buttons = (
-    <>
+    <View style={{ rowGap: 8 }}>
       {onSubmit && (
         <Pressable
           onPress={onSubmit}
@@ -33,7 +33,6 @@ export const Modal = ({
             paddingVertical: 12,
             borderRadius: 8,
             alignItems: "center",
-            marginBottom: 8,
           }}
         >
           <Text
@@ -49,7 +48,7 @@ export const Modal = ({
       <Pressable
         onPress={onClose}
         style={{
-          backgroundColor: COLORS.background,
+          backgroundColor: COLORS.backgroundPrimary,
           paddingVertical: 12,
           borderRadius: 8,
           alignItems: "center",
@@ -66,7 +65,7 @@ export const Modal = ({
           {closeLabel}
         </Text>
       </Pressable>
-    </>
+    </View>
   );
   return (
     <RNModal visible={visible} transparent onRequestClose={onClose}>
@@ -80,7 +79,7 @@ export const Modal = ({
       >
         <View
           style={{
-            backgroundColor: COLORS.background,
+            backgroundColor: COLORS.backgroundPrimary,
             borderRadius: 12,
             padding: 20,
             width: "80%",
@@ -109,7 +108,7 @@ export const Modal = ({
               </Text>
             )}
           </View>
-          {children}
+          <View style={{ zIndex: 10 }}>{children}</View>
           {Buttons}
         </View>
       </View>
