@@ -1,6 +1,7 @@
 from flask import Flask
 from routes.dictionary import *
 from routes.translate import *
+from routes.tts import *
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -13,6 +14,7 @@ def create_app():
 
     app.register_blueprint(define_bp)
     app.register_blueprint(translate_bp)
+    app.register_blueprint(tts_bp)
 
     return app
 
