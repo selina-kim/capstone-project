@@ -12,6 +12,7 @@ services:
 # --- Backend Service ---
   backend:
     build: ./backend
+    env_file: .env
     networks:
       - back-tier
     restart: unless-stopped
