@@ -37,16 +37,16 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
 
 1. Install frontend node dependencies
 
-   ```bash
-   cd frontend
-   npm install
-   ```
+```bash
+cd frontend
+npm install
+```
 
 2. Start the frontend app
 
-   ```bash
-   npx expo start
-   ```
+```bash
+npx expo start
+```
 
 - In the output, you'll find options to open the app in a
   - [development build](https://docs.expo.dev/develop/development-builds/introduction/)
