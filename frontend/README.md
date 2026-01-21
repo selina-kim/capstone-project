@@ -25,6 +25,12 @@ frontend/
 
 - Node version: v22.21.1
 
+### VS Code Setup
+
+- For proper formatting to work while you're coding:
+  - Install Prettier (esbenp.prettier-vscode) VS Code Extension
+  - If formatting still doesn't work, try opening VS Code window at `frontend` folder, not the root of the `capstone` repository
+
 ### Run the Application (Expo)
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
