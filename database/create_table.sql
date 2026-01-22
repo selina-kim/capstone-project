@@ -5,7 +5,7 @@ create table Users (
     u_id varchar(255) primary key,
     email varchar(255) unique not null,
     display_name varchar(30) not null,
-    timezone varchar(50) not null,
+    timezone text not null,
     new_cards_per_day integer default 10,
     desired_retention double precision default 0.9    
 );
@@ -13,6 +13,7 @@ create table Users (
 -- u_id: primary key, storing user id from 'sub' field in Google ID Token
 -- email: user's email address
 -- display_name: user's chosen name to use in app
+-- timezone: user's timezone, stored as text (e.g., 'America/New_York')
 -- new_cards_per_day: number of new cards user wants to learn per day, default is 10
 -- desired_retention: user's desired card retention rate, default is 0.9 (90%)
 
@@ -54,26 +55,25 @@ create index idx_decks_user on Decks(u_id);
 create table Cards (
     c_id serial primary key,
     d_id integer references Decks(d_id) on delete cascade,
-    word varchar(100) not null,
-    translation varchar(100) not null,
+    word text not null,
+    translation text not null,
     definition text,
     image text,
     word_example text,
     trans_example text,
-    word_audio varchar(1024),
-    trans_audio varchar(1024),
-    word_roman varchar(100) not null,
-    trans_roman varchar(100),
+    word_audio text,
+    trans_audio text,
+    word_roman text not null,
+    trans_roman text,
     -- FSRS fields: 
-    state integer, 
+    learning_state integer, 
     step integer,
     difficulty double precision,
     stability double precision,
-    -- retrievability double precision, --TODO REMOVE
+    due_date timestamp with time zone,
+    last_review timestamp with time zone,
     successful_reps integer default 0,
     fail_count integer default 0,
-    due_date timestamp with time zone,
-    interval integer not null,
     -- ensure fail/success counts intervals are non-negative
     CHECK (successful_reps >= 0),
     CHECK (fail_count >= 0),
@@ -93,15 +93,14 @@ create table Cards (
 -- trans_roman: pronunciation or romanization of the translation
 
 -- FSRS column definitions:
--- state: current learning state of the card
+-- learning_state: current learning state of the card
 -- step: current learning or relearning step of the card
 -- difficulty: how difficult the card is for the user 
 -- stability: how well the memory is retained over time
--- retrievability: how easily the user can retrieve the card from memory --TODO REMOVE
--- successful_reps: number of times the card has been successfully reviewed in row
--- fail_count: number of times the user has failed to recall the card
--- interval: number of days until next review
 -- due_date: date the card is due for review
+-- last_review: timestamp of the last review of the card
+-- successful_reps: number of times the card has been successfully reviewed in row
+-- fail_count: number of times the user has failed to recall the card, can be used for leeches
 
 -- index: all cards in a deck
 create index idx_cards_deck on Cards(d_id);
@@ -112,19 +111,19 @@ create index idx_cards_deck on Cards(d_id);
 -- and prevent changes in the result returned over time. This supports the 
 -- idea that we help the user generate cards but allow them to make edits.
 
-create table ReviewHistory (
-    rh_id serial primary key,
+create table Review_Logs (
+    rl_id serial primary key,
     c_id integer references cards(c_id) on delete cascade,
     rating integer not null,      
     review_date timestamp with time zone not null default current_timestamp,
     review_duration integer      
 );
 -- column definitions:
--- rh_id: primary key, storing review history id
+-- rl_id: primary key, storing review log id
 -- c_id: foreign key, storing card id
 -- rating: user's self-assessed score of recall quality 
 -- review_date: date and time when the review took place
--- review_duration: time taken to recall the card (in seconds)
+-- review_duration: time taken to recall the card (in milliseconds)
 
 -- index: all review history by card
-CREATE INDEX idx_reviewhistory_card ON ReviewHistory(c_id);
+create index idx_review_logs_card ON Review_Logs(c_id);
