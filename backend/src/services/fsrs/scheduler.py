@@ -7,6 +7,7 @@ Ref: https://github.com/open-spaced-repetition/py-fsrs/blob/main/fsrs/scheduler.
 """
 
 import math
+import torch
 from random import random
 from copy import copy
 from numbers import Real
@@ -15,8 +16,8 @@ from services.fsrs.learning_state import LearningState
 from services.fsrs.card import Card
 from services.fsrs.review_log import ReviewLog
 from datetime import datetime, timezone, timedelta
-from pydantic import BaseModel, Field, model_validator
-from typing import Optional
+from pydantic import BaseModel, Field, model_validator, ConfigDict
+from typing import Optional, Any
 
 # --- CONSTANTS ---
 FSRS_DEFAULT_DECAY = 0.1542
@@ -39,23 +40,40 @@ class Scheduler(BaseModel):
     Enables the reviewing and future scheduling of cards according to the FSRS algorithm.
 
     Attributes:
-        parameters:         The model weights of the FSRS scheduler.
+        parameters:         The model weights of the FSRS scheduler.  Can be tuple of floats or torch.Tensor during optimization.
         desired_retention:  The desired retention rate of cards scheduled with the scheduler. NOTE this value should come from the variable stored in the user table.
         learning_steps:     Small time intervals that schedule cards in the Learning state.
         relearning_steps:   Small time intervals that schedule cards in the Relearning state.
         maximum_interval:   The maximum number of days a Review-state card can be scheduled into the future.
         enable_fuzzing:     Whether to apply a small amount of random 'fuzz' to calculated intervals.
     """
-    parameters: tuple[float, ...] = Field(default_factory=lambda: DEFAULT_PARAMETERS)
+    parameters: Any = Field(default_factory=lambda: DEFAULT_PARAMETERS)
     desired_retention: float = Field(default=0.9, ge=0.0, le=1.0)
     learning_steps: tuple[timedelta, ...] = Field(default_factory=lambda: (timedelta(minutes=1), timedelta(minutes=10)))
     relearning_steps: tuple[timedelta, ...] = Field(default_factory=lambda: (timedelta(minutes=10),))
     maximum_interval: int = Field(default=36500, gt=0)
-    enable_fuzzing: bool = True    
+    enable_fuzzing: bool = True
+    
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    def __str__(self):
+        """Return same representation as repr() for consistency."""
+        return repr(self)
 
     @model_validator(mode="after")
     def validate_parameters(self) -> "Scheduler":
         parameters = self.parameters
+        
+        # Convert list to tuple (happens when deserializing from JSON)
+        if isinstance(parameters, list):
+            self.parameters = tuple(parameters)
+            parameters = self.parameters
+        
+        # If parameters is a tensor, skip validation (used during optimization)
+        if isinstance(parameters, torch.Tensor):
+            self._DECAY = -self.parameters[20]
+            self._FACTOR = 0.9 ** (1 / self._DECAY) - 1
+            return self
 
         if len(parameters) != len(LOWER_BOUNDS_PARAMETERS):
             raise ValueError(
@@ -82,7 +100,7 @@ class Scheduler(BaseModel):
         return self
 
 
-    def get_card_retrievability(self, card: Card, current_datetime: Optional[datetime] = None) -> float:
+    def get_card_retrievability(self, card: Card, current_datetime: Optional[datetime] = None) -> Any:
         """
         Calculates a Card object's current retrievability for a given date and time.
 
@@ -128,7 +146,10 @@ class Scheduler(BaseModel):
     
     def review_card(self, card: Card, grade: Grade, review_datetime: Optional[datetime] = None, review_duration: Optional[int] = None) -> tuple[Card, ReviewLog]:
         """
-        Reviews a card with a given grade at a given time for a specified duration.
+        Updates a card's state after a user review.
+
+        It computes the new stability and difficulty, determines the next interval before the card should be reviewed again, 
+        and generates a ReviewLog entry for that review.
 
         Args:
             card:               The card being reviewed.
@@ -301,7 +322,7 @@ class Scheduler(BaseModel):
         return card, review_log
 
 
-    def reschedule_card(self, card: Card, review_logs: list[ReviewLog]):
+    def reschedule_card(self, card: Card, review_logs: list[ReviewLog]) -> Card:
         """
         Reschedules/updates the given card with the current scheduler provided that card's review logs.
 

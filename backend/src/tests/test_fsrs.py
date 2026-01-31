@@ -11,6 +11,7 @@ import random
 from copy import deepcopy
 import sys
 import re
+import time
 
 TEST_RATINGS_1 = (
     Grade.Good,
@@ -1046,11 +1047,16 @@ class TestPyFSRS:
         card = Card()
 
         review_logs = []
+
+        start = time.time()
         for grade in TEST_RATINGS_1:
             card, review_log = scheduler.review_card(
                 card=card, grade=grade, review_datetime=card.due
             )
             review_logs.append(review_log)
+
+        end = time.time()
+        print(start-end)
 
         rescheduled_card = scheduler.reschedule_card(card=card, review_logs=review_logs)
 

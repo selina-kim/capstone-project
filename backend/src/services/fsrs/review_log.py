@@ -28,7 +28,6 @@ class ReviewLog(BaseModel):
     review_duration: Optional[int] = None
 
     model_config = {
-        "use_enum_values": True,   # serialize Grade as its int value
         "json_encoders": {
             datetime: lambda dt: dt.isoformat(),
         },

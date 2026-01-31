@@ -15,11 +15,12 @@ from services.fsrs.grade import Grade
 from services.fsrs.review_log import ReviewLog
 from services.fsrs.scheduler import Scheduler, DEFAULT_PARAMETERS, LOWER_BOUNDS_PARAMETERS, UPPER_BOUNDS_PARAMETERS
 from datetime import datetime, timezone
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, PrivateAttr, ConfigDict
 from torch.nn import BCELoss
 from torch import optim
 import pandas as pd
 from tqdm import tqdm
+from typing import Optional
 
 # weight clipping
 LOWER_BOUNDS_PARAMETERS_TENSORS = torch.tensor(LOWER_BOUNDS_PARAMETERS, dtype=torch.float64)
@@ -40,10 +41,10 @@ class Optimizer(BaseModel):
 
     Attributes:
         review_logs: A collection of previous ReviewLog objects from a user.
-        revlogs_train: The collection of review logs, sorted and formatted for optimization.
+        _revlogs_train: The collection of review logs, sorted and formatted for optimization.
     """
     review_logs: tuple[ReviewLog, ...] | list[ReviewLog]
-    revlogs_train: object = Field(init=False)
+    _revlogs_train: object = PrivateAttr(default=None)
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
@@ -55,7 +56,7 @@ class Optimizer(BaseModel):
             Returns:
                 dict: dictionary of the sorted ReviewLog objects.
         """
-        revlogs_train = {}
+        _revlogs_train = {}
 
         for review_log in self.review_logs:
             card_id = review_log.card_id
@@ -69,18 +70,18 @@ class Optimizer(BaseModel):
             # as a ML problem, [x, y] = [[review_datetime, grade, review_duration], recall]
             datum = [[review_datetime, grade, review_duration], recall]
 
-            if card_id not in revlogs_train:
-                revlogs_train[card_id] = []
+            if card_id not in _revlogs_train:
+                _revlogs_train[card_id] = []
 
-            revlogs_train[card_id].append(datum)
-            revlogs_train[card_id] = sorted(revlogs_train[card_id], key=lambda x: x[0][0])  # keep reviews sorted
+            _revlogs_train[card_id].append(datum)
+            _revlogs_train[card_id] = sorted(_revlogs_train[card_id], key=lambda x: x[0][0])  # keep reviews sorted
 
-        return dict(sorted(revlogs_train.items())) # sort the dictionary in order of when each card history starts
+        return dict(sorted(_revlogs_train.items())) # sort the dictionary in order of when each card history starts
 
 
     def model_post_init(self, __context) -> None:
         self.review_logs = deepcopy(tuple(self.review_logs))
-        self.revlogs_train = self._format_revlogs()
+        self._revlogs_train = self._format_revlogs()
 
 
     def _compute_batch_loss(self, parameters: list[float]) -> float:
@@ -94,14 +95,14 @@ class Optimizer(BaseModel):
             float: the mean loss across the entire batch of review logs.
         """
 
-        card_ids = list(self.revlogs_train.keys())
+        card_ids = list(self._revlogs_train.keys())
         params = torch.tensor(parameters, dtype=torch.float64)
         criteron = BCELoss()
         scheduler = Scheduler(parameters=params)
         step_losses = []
 
         for card_id in card_ids:
-            card_review_history = self.revlogs_train[card_id][:max_seq_len]
+            card_review_history = self._revlogs_train[card_id][:max_seq_len]
 
             for i in range(len(card_review_history)):
                 review = card_review_history[i]
@@ -143,26 +144,26 @@ class Optimizer(BaseModel):
         scheduler = Scheduler()
         num_reviews = 0
         # iterate through the card review histories
-        card_ids = list(self.revlogs_train.keys())
+        card_ids = list(self._revlogs_train.keys())
         for card_id in card_ids:
-            card_review_history = self.revlogs_train[card_id][:max_seq_len]
+            card_review_history = self._revlogs_train[card_id][:max_seq_len]
 
             # iterate through the current Card's review history
             for i in range(len(card_review_history)):
                 review = card_review_history[i]
 
                 review_datetime = review[0][0]
-                rating = review[0][1]
+                grade = review[0][1]
 
                 # if this is the first review, create the Card object
                 if i == 0:
                     card = Card(card_id=card_id, due=review_datetime)
 
                 # only non-same-day reviews count
-                if (card.last_reviewand (review_datetime - card.last_review).days > 0):
+                if (card.last_review and (review_datetime - card.last_review).days > 0):
                     num_reviews += 1
 
-                card, _ = scheduler.review_card(card=card,rating=rating,review_datetime=review_datetime,review_duration=None)
+                card, _ = scheduler.review_card(card=card,grade=grade,review_datetime=review_datetime,review_duration=None)
 
         return num_reviews
     
@@ -220,7 +221,7 @@ class Optimizer(BaseModel):
             # set local random seed for reproducibility
             rng = Random(42)
 
-            card_ids = list(self.revlogs_train.keys())
+            card_ids = list(self._revlogs_train.keys())
 
             num_reviews = self._num_reviews()
 
@@ -250,7 +251,7 @@ class Optimizer(BaseModel):
 
                 # iterate through the card review histories (sequences)
                 for card_id in card_ids:
-                    card_review_history = self.revlogs_train[card_id][:max_seq_len]
+                    card_review_history = self._revlogs_train[card_id][:max_seq_len]
 
                     # iterate through the current Card's review history (steps)
                     for i in range(len(card_review_history)):
@@ -261,7 +262,7 @@ class Optimizer(BaseModel):
                         # target
                         y_retrievability = review[1]
                         # update
-                        u_rating = review[0][1]
+                        u_grade = review[0][1]
 
                         # if this is the first review, create the Card object
                         if i == 0:
@@ -277,20 +278,20 @@ class Optimizer(BaseModel):
                             step_losses.append(step_loss)
 
                         # update the card's state
-                        card, _ = scheduler.review_card(card=card, rating=u_rating, review_datetime=x_date, review_duration=None)
+                        card, _ = scheduler.review_card(card=card, grade=u_grade, review_datetime=x_date, review_duration=None)
 
                         # take a gradient step after each mini-batch
                         if len(step_losses) == mini_batch_size:
                             self._update_parameters(step_losses=step_losses, adam_optimizer=adam_optimizer, params=params, lr_scheduler=lr_scheduler)
 
-                            # update the scheduler's with the new parameters
-                            scheduler = Scheduler(parameters=params)
                             # clear the step losses for next batch
                             step_losses = []
-
-                            # remove gradient history from tensor card parameters for next batch
-                            card.stability = card.stability.detach()
-                            card.difficulty = card.difficulty.detach()
+                            
+                            # Detach card tensors after backward to prevent reusing freed graph
+                            if hasattr(card, 'stability') and card.stability is not None and isinstance(card.stability, torch.Tensor):
+                                card.stability = card.stability.detach()
+                            if hasattr(card, 'difficulty') and card.difficulty is not None and isinstance(card.difficulty, torch.Tensor):
+                                card.difficulty = card.difficulty.detach()
 
                 # update params on remaining review logs
                 if len(step_losses) > 0:
@@ -315,21 +316,25 @@ class Optimizer(BaseModel):
         TODO
 
         Args:
-            result: TODO
+            probs_and_costs_dict: TODO
             sub_df: TODO
             prefix: TODO
             normalize_on: TODO
         """
-        counts = sub_df["rating"].value_counts()
+        counts = sub_df["grade"].value_counts()
         total = counts.sum() if normalize_on is None else counts[normalize_on].sum()
 
-        for rating, count in counts.items():
-            if normalize_on is None or rating in normalize_on:
-                probs_and_costs_dict[f"{prefix}_{rating.name.lower()}"] = (count / total if total else 0)
+        for grade, count in counts.items():
+            if normalize_on is None or grade in normalize_on:
+                # grade is now an int, convert to Grade enum to get name
+                grade_enum = Grade(grade) if isinstance(grade, int) else grade
+                probs_and_costs_dict[f"{prefix}_{grade_enum.name.lower()}"] = (count / total if total else 0)
 
-        means = sub_df.groupby("rating")["review_duration"].mean()
-        for rating, value in means.items():
-            probs_and_costs_dict[f"avg_{prefix}_{rating.name.lower()}_review_duration"] = value or 0
+        means = sub_df.groupby("grade")["review_duration"].mean()
+        for grade, value in means.items():
+            # grade is now an int, convert to Grade enum to get name
+            grade_enum = Grade(grade) if isinstance(grade, int) else grade
+            probs_and_costs_dict[f"avg_{prefix}_{grade_enum.name.lower()}_review_duration"] = value or 0
 
 
     def _compute_probs_and_costs(self) -> dict[str, float]:
@@ -339,8 +344,17 @@ class Optimizer(BaseModel):
         Returns:
             dict[str, float]: TODO
         """
+        # Convert review logs to dict format, converting Grade enum to int for pandas
+        review_log_dicts = []
+        for review_log in self.review_logs:
+            log_dict = vars(review_log).copy()
+            # Convert Grade enum to int value for pandas operations
+            if isinstance(log_dict['grade'], Grade):
+                log_dict['grade'] = log_dict['grade'].value
+            review_log_dicts.append(log_dict)
+        
         review_log_df  = (
-            pd.DataFrame(vars(review_log) for review_log in self.review_logs)
+            pd.DataFrame(review_log_dicts)
             .sort_values(by=["card_id", "review_datetime"], ascending=[True, True])
             .reset_index(drop=True)
         )
@@ -373,26 +387,6 @@ class Optimizer(BaseModel):
 
         scheduler = Scheduler(parameters=parameters,desired_retention=desired_retention,enable_fuzzing=False,)
 
-        # unpack probs_and_costs_dict
-        prob_first_again = probs_and_costs_dict["prob_first_again"]
-        prob_first_hard = probs_and_costs_dict["prob_first_hard"]
-        prob_first_good = probs_and_costs_dict["prob_first_good"]
-        prob_first_easy = probs_and_costs_dict["prob_first_easy"]
-
-        avg_first_again_review_duration = probs_and_costs_dict["avg_first_again_review_duration"]
-        avg_first_hard_review_duration = probs_and_costs_dict["avg_first_hard_review_duration"]
-        avg_first_good_review_duration = probs_and_costs_dict["avg_first_good_review_duration"]
-        avg_first_easy_review_duration = probs_and_costs_dict["avg_first_easy_review_duration"]
-
-        prob_hard = probs_and_costs_dict["prob_hard"]
-        prob_good = probs_and_costs_dict["prob_good"]
-        prob_easy = probs_and_costs_dict["prob_easy"]
-
-        avg_again_review_duration = probs_and_costs_dict["avg_again_review_duration"]
-        avg_hard_review_duration = probs_and_costs_dict["avg_hard_review_duration"]
-        avg_good_review_duration = probs_and_costs_dict["avg_good_review_duration"]
-        avg_easy_review_duration = probs_and_costs_dict["avg_easy_review_duration"]
-
         simulation_cost = 0
         for i in range(num_cards_simulate):
             card = Card()
@@ -403,38 +397,37 @@ class Optimizer(BaseModel):
                     grade = rng.choices(
                         [Grade.Again, Grade.Hard, Grade.Good, Grade.Easy],
                         weights=[
-                            prob_first_again,
-                            prob_first_hard,
-                            prob_first_good,
-                            prob_first_easy,
+                            probs_and_costs_dict["prob_first_again"],
+                            probs_and_costs_dict["prob_first_hard"],
+                            probs_and_costs_dict["prob_first_good"],
+                            probs_and_costs_dict["prob_first_easy"],
                         ],
                     )[0]
 
                     if grade == Grade.Again:
-                        simulation_cost += avg_first_again_review_duration
+                        simulation_cost += probs_and_costs_dict["avg_first_again_review_duration"]
                     elif grade == Grade.Hard:
-                        simulation_cost += avg_first_hard_review_duration
+                        simulation_cost += probs_and_costs_dict["avg_first_hard_review_duration"]
                     elif grade == Grade.Good:
-                        simulation_cost += avg_first_good_review_duration
+                        simulation_cost += probs_and_costs_dict["avg_first_good_review_duration"]
                     elif grade == Grade.Easy:
-                        simulation_cost += avg_first_easy_review_duration
-
+                        simulation_cost += probs_and_costs_dict["avg_first_easy_review_duration"]
                 # the card is not new
                 else:
                     grade = rng.choices(["recall", Grade.Again], weights=[desired_retention, 1.0 - desired_retention])[0]
 
                     if grade == "recall":
                         # compute probability that the user chose hard/good/easy, GIVEN that they correctly recalled the card
-                        grade = rng.choices([Grade.Hard, Grade.Good, Grade.Easy], weights=[prob_hard, prob_good, prob_easy])[0]
+                        grade = rng.choices([Grade.Hard, Grade.Good, Grade.Easy], weights=[probs_and_costs_dict["prob_hard"], probs_and_costs_dict["prob_good"], probs_and_costs_dict["prob_easy"]])[0]
 
                     if grade == Grade.Again:
-                        simulation_cost += avg_again_review_duration
+                        simulation_cost += probs_and_costs_dict["avg_again_review_duration"]
                     elif grade == Grade.Hard:
-                        simulation_cost += avg_hard_review_duration
+                        simulation_cost += probs_and_costs_dict["avg_hard_review_duration"]
                     elif grade == Grade.Good:
-                        simulation_cost += avg_good_review_duration
+                        simulation_cost += probs_and_costs_dict["avg_good_review_duration"]
                     elif grade == Grade.Easy:
-                        simulation_cost += avg_easy_review_duration
+                        simulation_cost += probs_and_costs_dict["avg_easy_review_duration"]
 
                 card, _ = scheduler.review_card(card=card, grade=grade, review_datetime=curr_date)
                 curr_date = card.due
@@ -459,7 +452,9 @@ class Optimizer(BaseModel):
 
 
     def compute_optimal_retention(self, parameters: tuple[float, ...] | list[float]) -> list[float]:
-        """ TODO
+        """ 
+        Simulates different retention targets and selects the target that minimizes the review cost.
+        TODO
         """
 
         self._validate_review_logs()

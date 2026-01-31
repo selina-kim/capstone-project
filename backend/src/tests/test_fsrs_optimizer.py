@@ -50,11 +50,11 @@ def get_revlogs() -> list[ReviewLog]:
     for index, row in df.iterrows():
         card_id = row["card_id"]
         grade = Grade(row["grade"])
-        review_datetime = datetime.fromisoformat(row["review_time"])
+        review_datetime = datetime.fromisoformat(row["review_datetime"])
         review_duration = row["review_duration"]
 
         review_log = ReviewLog(
-            card_id=card_id,
+            card_id=str(card_id),
             grade=grade,
             review_datetime=review_datetime,
             review_duration=review_duration,
@@ -74,7 +74,7 @@ class TestOptimizer:
 
         review_logs = []
 
-        optimizer = Optimizer(review_logs)
+        optimizer = Optimizer(review_logs=review_logs)
 
         optimal_parameters = optimizer.compute_optimal_parameters()
 
@@ -87,7 +87,7 @@ class TestOptimizer:
 
         review_logs = get_revlogs()
 
-        optimizer = Optimizer(review_logs)
+        optimizer = Optimizer(review_logs=review_logs)
 
         optimal_parameters = optimizer.compute_optimal_parameters()
 
@@ -107,7 +107,7 @@ class TestOptimizer:
         assert optimal_parameters == optimal_parameters_again
 
         # initializing another optimizer will give the same results as the original optimizer
-        optimizer_new = Optimizer(review_logs)
+        optimizer_new = Optimizer(review_logs=review_logs)
         optimal_parameters_new = optimizer_new.compute_optimal_parameters()
         assert optimal_parameters == optimal_parameters_new
 
@@ -121,7 +121,7 @@ class TestOptimizer:
         # if there are fewer review logs than the minibatch size of 512, then the parameters returned are the starting parameters
         few_revlogs = review_logs[0:500]
 
-        optimizer = Optimizer(few_revlogs)
+        optimizer = Optimizer(review_logs=few_revlogs)
 
         optimal_parameters = optimizer.compute_optimal_parameters()
 
@@ -142,8 +142,8 @@ class TestOptimizer:
         shuffle(reviewlogs_copy1)
         shuffle(reviewlogs_copy2)
 
-        optimizer1 = Optimizer(reviewlogs_copy1)
-        optimizer2 = Optimizer(reviewlogs_copy2)
+        optimizer1 = Optimizer(review_logs=reviewlogs_copy1)
+        optimizer2 = Optimizer(review_logs=reviewlogs_copy2)
 
         optimal_parameters1 = optimizer1.compute_optimal_parameters()
         optimal_parameters2 = optimizer2.compute_optimal_parameters()
@@ -153,7 +153,7 @@ class TestOptimizer:
     def test_optimal_retention(self):
         review_logs = get_revlogs()
 
-        optimizer = Optimizer(review_logs)
+        optimizer = Optimizer(review_logs=review_logs)
 
         expected_optimal_retention = 0.85
 
@@ -166,7 +166,7 @@ class TestOptimizer:
 
         # computing the optimal retention on a new optimizer with the same review logs and parameters will return
         # the same result
-        optimizer_2 = Optimizer(review_logs)
+        optimizer_2 = Optimizer(review_logs=review_logs)
         optimal_retention_optimal_parameters_2 = optimizer_2.compute_optimal_retention(
             parameters=test_optimal_parameters
         )
@@ -186,7 +186,7 @@ class TestOptimizer:
     def test_optimal_retention_zero_review_logs(self):
         # can't compute optimal retention with zero review logs
         zero_revlogs = []
-        optimizer = Optimizer(zero_revlogs)
+        optimizer = Optimizer(review_logs=zero_revlogs)
         with pytest.raises(ValueError):
             _ = optimizer.compute_optimal_retention(parameters=DEFAULT_PARAMETERS)
 
@@ -194,7 +194,7 @@ class TestOptimizer:
         review_logs = get_revlogs()
         few_revlogs = review_logs[:100]
 
-        optimizer = Optimizer(few_revlogs)
+        optimizer = Optimizer(review_logs=few_revlogs)
         with pytest.raises(ValueError):
             _ = optimizer.compute_optimal_retention(parameters=DEFAULT_PARAMETERS)
 
@@ -202,7 +202,7 @@ class TestOptimizer:
         review_logs = get_revlogs()
 
         review_log_without_review_duration = ReviewLog(
-            card_id=42,
+            card_id="42",
             grade=2,
             review_datetime=datetime(2025, 1, 1, 0, 0, 0, 0, timezone.utc),
             review_duration=None,
@@ -210,14 +210,14 @@ class TestOptimizer:
 
         review_logs.append(review_log_without_review_duration)
 
-        optimizer = Optimizer(review_logs)
+        optimizer = Optimizer(review_logs=review_logs)
         with pytest.raises(ValueError):
             _ = optimizer.compute_optimal_retention(parameters=DEFAULT_PARAMETERS)
 
     def test_simulated_costs(self):
         review_logs = get_revlogs()
 
-        optimizer = Optimizer(review_logs)
+        optimizer = Optimizer(review_logs=review_logs)
 
         probs_and_costs_dict = optimizer._compute_probs_and_costs()
 
@@ -273,5 +273,5 @@ class TestOptimizer:
 
             assert card.difficulty == 1.0
 
-        optimizer = Optimizer(review_logs)
+        optimizer = Optimizer(review_logs=review_logs)
         _ = optimizer.compute_optimal_parameters()  # this should not raise an exception
