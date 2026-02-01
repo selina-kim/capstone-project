@@ -13,6 +13,7 @@ from copy import deepcopy
 from services.fsrs.card import Card
 from services.fsrs.grade import Grade
 from services.fsrs.review_log import ReviewLog
+from services.fsrs.learning_state import LearningState
 from services.fsrs.scheduler import Scheduler, DEFAULT_PARAMETERS, LOWER_BOUNDS_PARAMETERS, UPPER_BOUNDS_PARAMETERS
 from datetime import datetime, timezone
 from pydantic import BaseModel, PrivateAttr, ConfigDict
@@ -187,7 +188,7 @@ class Optimizer(BaseModel):
 
         # clamp the weights in place without modifying the computational graph
         with torch.no_grad():
-            params.clamp_(min=LOWER_BOUNDS_PARAMETERS_TENSORS, max=UPPER_BOUNDS_PARAMETERS_TENSORS,)
+            params.clamp_(min=LOWER_BOUNDS_PARAMETERS_TENSORS, max=UPPER_BOUNDS_PARAMETERS_TENSORS)
 
         # update the learning rate
         lr_scheduler.step()
@@ -283,15 +284,16 @@ class Optimizer(BaseModel):
                         # take a gradient step after each mini-batch
                         if len(step_losses) == mini_batch_size:
                             self._update_parameters(step_losses=step_losses, adam_optimizer=adam_optimizer, params=params, lr_scheduler=lr_scheduler)
-
+                            
+                            # Recreate scheduler with updated parameters to reset computational graph
+                            scheduler = Scheduler(parameters=params)
+                            
                             # clear the step losses for next batch
                             step_losses = []
                             
-                            # Detach card tensors after backward to prevent reusing freed graph
-                            if hasattr(card, 'stability') and card.stability is not None and isinstance(card.stability, torch.Tensor):
-                                card.stability = card.stability.detach()
-                            if hasattr(card, 'difficulty') and card.difficulty is not None and isinstance(card.difficulty, torch.Tensor):
-                                card.difficulty = card.difficulty.detach()
+                            # remove gradient history from tensor card parameters for next batch
+                            card.stability = card.stability.detach()
+                            card.difficulty = card.difficulty.detach()
 
                 # update params on remaining review logs
                 if len(step_losses) > 0:
@@ -308,7 +310,7 @@ class Optimizer(BaseModel):
                     best_loss = epoch_batch_loss
                     best_params = detached_params
 
-            return best_params
+            return best_params if best_params is not None else detached_params
 
 
     def _probs_and_means(self, probs_and_costs_dict: dict, sub_df, prefix, normalize_on=None) -> None:
@@ -322,19 +324,32 @@ class Optimizer(BaseModel):
             normalize_on: TODO
         """
         counts = sub_df["grade"].value_counts()
-        total = counts.sum() if normalize_on is None else counts[normalize_on].sum()
-
-        for grade, count in counts.items():
-            if normalize_on is None or grade in normalize_on:
-                # grade is now an int, convert to Grade enum to get name
-                grade_enum = Grade(grade) if isinstance(grade, int) else grade
-                probs_and_costs_dict[f"{prefix}_{grade_enum.name.lower()}"] = (count / total if total else 0)
+        
+        # Calculate total for normalization
+        if normalize_on is None:
+            total = counts.sum()
+        else:
+            # Sum counts for grades in normalize_on list
+            total = sum(counts.get(grade_val, 0) for grade_val in normalize_on)
+        
+        # Iterate through all possible grades to ensure all keys are present
+        for grade_enum in Grade:
+            grade_val = grade_enum.value
+            count = counts.get(grade_val, 0)
+            
+            if normalize_on is None or grade_val in normalize_on:
+                # Add prob_ prefix for probabilities
+                key = f"prob_{prefix}_{grade_enum.name.lower()}" if prefix else f"prob_{grade_enum.name.lower()}"
+                probs_and_costs_dict[key] = (count / total if total else 0)
 
         means = sub_df.groupby("grade")["review_duration"].mean()
-        for grade, value in means.items():
-            # grade is now an int, convert to Grade enum to get name
-            grade_enum = Grade(grade) if isinstance(grade, int) else grade
-            probs_and_costs_dict[f"avg_{prefix}_{grade_enum.name.lower()}_review_duration"] = value or 0
+        
+        # Ensure all avg_ keys exist, even for grades not in the data
+        for grade_enum in Grade:
+            grade_val = grade_enum.value
+            avg_key = f"avg_{prefix}_{grade_enum.name.lower()}_review_duration" if prefix else f"avg_{grade_enum.name.lower()}_review_duration"
+            # Get mean if exists, otherwise default to 0
+            probs_and_costs_dict[avg_key] = means.get(grade_val, 0) or 0
 
 
     def _compute_probs_and_costs(self) -> dict[str, float]:
@@ -369,7 +384,7 @@ class Optimizer(BaseModel):
         non_first_reviews = review_log_df [review_log_df ["card_id"].duplicated(keep="first")]
 
         # probabilities only among successful recalls
-        self._probs_and_means(probs_and_costs_dict, non_first_reviews, "", normalize_on={Grade.Hard, Grade.Good, Grade.Easy})
+        self._probs_and_means(probs_and_costs_dict, non_first_reviews, "", normalize_on=[Grade.Hard.value, Grade.Good.value, Grade.Easy.value])
 
         return probs_and_costs_dict
     
