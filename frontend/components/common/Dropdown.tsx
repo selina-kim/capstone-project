@@ -1,6 +1,7 @@
 import { COLORS } from "@/constants/colors";
 import { useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
+import { CText } from "./CText";
 
 interface DropdownProps {
   value: string;
@@ -36,16 +37,16 @@ export const Dropdown = ({
           alignItems: "center",
         }}
       >
-        <Text
+        <CText
           style={{
             color: value ? COLORS.text.secondary : COLORS.text.secondary,
           }}
         >
           {value || placeholder}
-        </Text>
-        <Text style={{ color: COLORS.text.secondary }}>
+        </CText>
+        <CText style={{ color: COLORS.text.secondary }}>
           {isOpen ? "▲" : "▼"}
-        </Text>
+        </CText>
       </Pressable>
 
       {isOpen && (
@@ -80,14 +81,14 @@ export const Dropdown = ({
                       : COLORS.backgroundSecondary,
                 }}
               >
-                <Text
+                <CText
                   style={{
                     color: COLORS.text.secondary,
                     fontWeight: "normal",
                   }}
                 >
                   {option}
-                </Text>
+                </CText>
               </Pressable>
             ))}
           </ScrollView>

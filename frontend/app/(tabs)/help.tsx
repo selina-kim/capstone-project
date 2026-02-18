@@ -1,4 +1,5 @@
-import { Text, View } from "react-native";
+import { CText } from "@/components/common/CText";
+import { View } from "react-native";
 
 export default function Help() {
   return (
@@ -9,7 +10,7 @@ export default function Help() {
         alignItems: "center",
       }}
     >
-      <Text>help page</Text>
+      <CText>help page</CText>
     </View>
   );
 }

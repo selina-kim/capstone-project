@@ -1,5 +1,5 @@
+import { CText } from "@/components/common/CText";
 import { Dropdown } from "@/components/common/Dropdown";
-import { InputLabel } from "@/components/common/InputLabel";
 import { Modal } from "@/components/common/Modal";
 import { TextInput } from "@/components/common/TextInput";
 import { useState } from "react";
@@ -56,7 +56,7 @@ export const CreateNewDeckModal = ({
           placeholder="e.g., Spanish Basics"
         />
         <View style={{ zIndex: 10 }}>
-          <InputLabel>Language *</InputLabel>
+          <CText variant="inputLabel">Language *</CText>
           <Dropdown
             value={language}
             options={LANGUAGES}

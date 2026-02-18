@@ -1,6 +1,7 @@
 import { COLORS } from "@/constants/colors";
 import { ReactNode } from "react";
-import { Pressable, Modal as RNModal, Text, View } from "react-native";
+import { Pressable, Modal as RNModal, View } from "react-native";
+import { CText } from "./CText";
 
 interface ModalProps {
   visible: boolean;
@@ -29,44 +30,36 @@ export const Modal = ({
         <Pressable
           onPress={onSubmit}
           style={{
+            height: 32,
+            display: "flex",
+            justifyContent: "center",
             backgroundColor: COLORS.button.fillPrimary,
-            paddingVertical: 12,
             borderRadius: 8,
             alignItems: "center",
           }}
         >
-          <Text
-            style={{
-              color: COLORS.text.primary,
-              fontWeight: "bold",
-            }}
-          >
-            {submitLabel}
-          </Text>
+          <CText bold>{submitLabel}</CText>
         </Pressable>
       )}
       <Pressable
         onPress={onClose}
         style={{
+          height: 32,
+          display: "flex",
+          justifyContent: "center",
           backgroundColor: COLORS.backgroundPrimary,
-          paddingVertical: 12,
           borderRadius: 8,
           alignItems: "center",
           borderColor: COLORS.text.primary,
           borderWidth: 2,
+          boxSizing: "border-box",
         }}
       >
-        <Text
-          style={{
-            color: COLORS.text.primary,
-            fontWeight: "bold",
-          }}
-        >
-          {closeLabel}
-        </Text>
+        <CText bold>{closeLabel}</CText>
       </Pressable>
     </View>
   );
+
   return (
     <RNModal visible={visible} transparent onRequestClose={onClose}>
       <View
@@ -87,25 +80,25 @@ export const Modal = ({
           }}
         >
           <View style={{ marginBottom: 16, rowGap: 4 }}>
-            <Text
+            <CText
               style={{
                 fontSize: 20,
-                fontWeight: "bold",
                 textAlign: "center",
                 color: COLORS.text.primary,
               }}
+              bold
             >
               {header}
-            </Text>
+            </CText>
             {subheader && (
-              <Text
+              <CText
                 style={{
                   color: COLORS.text.secondary,
                   textAlign: "center",
                 }}
               >
                 {subheader}
-              </Text>
+              </CText>
             )}
           </View>
           <View style={{ zIndex: 10 }}>{children}</View>

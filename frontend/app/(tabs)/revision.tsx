@@ -1,4 +1,5 @@
-import { Text, View } from "react-native";
+import { CText } from "@/components/common/CText";
+import { View } from "react-native";
 
 export default function Revision() {
   return (
@@ -9,7 +10,7 @@ export default function Revision() {
         alignItems: "center",
       }}
     >
-      <Text>reivision page</Text>
+      <CText>reivision page</CText>
     </View>
   );
 }

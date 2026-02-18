@@ -1,8 +1,9 @@
 import { DecksIcon } from "@/assets/icons/DecksIcon";
 import { PlusIcon } from "@/assets/icons/PlusIcon";
+import { CText } from "@/components/common/CText";
 import { COLORS } from "@/constants/colors";
 import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { CreateNewDeckModal } from "./CreateNewDeckModal";
 
 export const NoDecksBanner = () => {
@@ -20,18 +21,22 @@ export const NoDecksBanner = () => {
         <View style={{ width: 64, marginHorizontal: "auto" }}>
           <DecksIcon />
         </View>
-        <Text
+        <CText
           style={{
-            color: COLORS.text.primary,
-            fontWeight: "bold",
+            textAlign: "center",
+          }}
+          bold
+        >
+          No Decks Yet
+        </CText>
+        <CText
+          style={{
+            color: COLORS.text.secondary,
             textAlign: "center",
           }}
         >
-          No Decks Yet
-        </Text>
-        <Text style={{ color: COLORS.text.secondary, textAlign: "center" }}>
           Create your first deck to start learning!
-        </Text>
+        </CText>
         <Pressable
           onPress={() => setModalVisible(true)}
           style={{
@@ -49,16 +54,15 @@ export const NoDecksBanner = () => {
           <View style={{ minWidth: "auto" }}>
             <PlusIcon />
           </View>
-          <Text
+          <CText
             style={{
-              color: COLORS.text.primary,
-              fontWeight: "bold",
               textAlign: "center",
               width: "100%",
             }}
+            bold
           >
             Create Your First Deck
-          </Text>
+          </CText>
         </Pressable>
         <CreateNewDeckModal
           visible={modalVisible}
