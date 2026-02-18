@@ -1,6 +1,6 @@
 import { COLORS } from "@/constants/colors";
 import { ReactNode } from "react";
-import { Pressable, Modal as RNModal, View } from "react-native";
+import { Pressable, Modal as RNModal, StyleSheet, View } from "react-native";
 import { CText } from "./CText";
 
 interface ModalProps {
@@ -29,31 +29,26 @@ export const Modal = ({
       {onSubmit && (
         <Pressable
           onPress={onSubmit}
-          style={{
-            height: 32,
-            display: "flex",
-            justifyContent: "center",
-            backgroundColor: COLORS.button.fillPrimary,
-            borderRadius: 8,
-            alignItems: "center",
-          }}
+          style={[
+            buttonStyles.base,
+            {
+              backgroundColor: COLORS.button.fillPrimary,
+            },
+          ]}
         >
           <CText bold>{submitLabel}</CText>
         </Pressable>
       )}
       <Pressable
         onPress={onClose}
-        style={{
-          height: 32,
-          display: "flex",
-          justifyContent: "center",
-          backgroundColor: COLORS.backgroundPrimary,
-          borderRadius: 8,
-          alignItems: "center",
-          borderColor: COLORS.text.primary,
-          borderWidth: 2,
-          boxSizing: "border-box",
-        }}
+        style={[
+          buttonStyles.base,
+          {
+            backgroundColor: COLORS.backgroundPrimary,
+            borderColor: COLORS.text.primary,
+            borderWidth: 2,
+          },
+        ]}
       >
         <CText bold>{closeLabel}</CText>
       </Pressable>
@@ -84,7 +79,6 @@ export const Modal = ({
               style={{
                 fontSize: 20,
                 textAlign: "center",
-                color: COLORS.text.primary,
               }}
               bold
             >
@@ -108,3 +102,13 @@ export const Modal = ({
     </RNModal>
   );
 };
+
+const buttonStyles = StyleSheet.create({
+  base: {
+    height: 32,
+    display: "flex",
+    justifyContent: "center",
+    borderRadius: 8,
+    alignItems: "center",
+  },
+});

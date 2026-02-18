@@ -1,3 +1,4 @@
+import { ChevronDownIcon } from "@/assets/icons/ChevronDownIcon";
 import { COLORS } from "@/constants/colors";
 import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
@@ -44,9 +45,14 @@ export const Dropdown = ({
         >
           {value || placeholder}
         </CText>
-        <CText style={{ color: COLORS.text.secondary }}>
-          {isOpen ? "▲" : "▼"}
-        </CText>
+        <View
+          style={{
+            opacity: 0.5,
+            transform: [{ rotate: isOpen ? "180deg" : "0deg" }],
+          }}
+        >
+          <ChevronDownIcon stroke={COLORS.text.primary} />
+        </View>
       </Pressable>
 
       {isOpen && (
