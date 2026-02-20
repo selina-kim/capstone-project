@@ -25,5 +25,5 @@ Start the backend service:
 
 ```bash
 cd backend
-docker compose up
+docker compose up --build db minio backend
 ```

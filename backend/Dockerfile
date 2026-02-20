@@ -17,6 +17,9 @@ RUN apt-get update && \
 # Install Poetry for dependency management
 RUN pip install poetry
 
+# Install gcc
+RUN apt-get update && apt-get install -y gcc build-essential && rm -rf /var/lib/apt/lists/*
+
 # Copy dependency files
 COPY pyproject.toml poetry.lock* ./
 # Install Python dependencies in virtual environment
