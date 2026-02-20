@@ -18,7 +18,7 @@ export const NoDecksBanner = () => {
           paddingVertical: 30,
         }}
       >
-        <View style={{ width: 64, marginHorizontal: "auto" }}>
+        <View style={{ width: 64, height: 64, marginHorizontal: "auto" }}>
           <DecksIcon />
         </View>
         <CText
@@ -57,7 +57,6 @@ export const NoDecksBanner = () => {
           <CText
             style={{
               textAlign: "center",
-              width: "100%",
             }}
             bold
           >
