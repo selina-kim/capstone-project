@@ -37,7 +37,7 @@ cd backend
 docker compose up --build db minio backend
 ```
 
-### 3. Interact with APIs
+#### 3. Interact with APIs
 
 For example, sending a request to the translation api:
 
