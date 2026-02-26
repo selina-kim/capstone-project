@@ -2,8 +2,6 @@
 
 These tests make real calls to the TTS service (requires model download).
 
-Run with: docker compose exec backend poetry run pytest -m integration
-
 Test coverage:
 - Real TTS generation with various languages
 - Real speaker selection
@@ -17,6 +15,8 @@ Run this test file:
 Run with coverage:
     docker compose exec backend pytest src/tests/test_tts_integration.py --cov=services.tts_service -m integration
 """
+from urllib import response
+
 import pytest
 import json
 import numpy as np
@@ -78,23 +78,19 @@ def test_tts_korean_generation(client):
     assert sample_rate == 24000
     assert len(audio_data) > 1000  # Should have meaningful length
 
-# TODO in API P1
-# might need unidic-lite = "^1.0.8"
-# @pytest.mark.integration
-# def test_tts_japanese_generation(client):
-#     """Test real TTS generation for Japanese text."""
-#     response = client.post(
-#         "/tts",
-#         json={
-#             "text": "こんにちは、テキスト読み上げシステムのテストです。",
-#             "language": "ja"
-#         }
-#     )
-    
-#     # May return 500 if default speaker doesn't support Japanese well
-#     # assert response.status_code in [200, 500]
-#     # if response.status_code == 200:
-#     #     assert len(response.data) > 0
+def test_tts_japanese_generation(client):
+    """Test real TTS generation for Japanese text."""
+    response = client.post(
+        "/tts",
+        json={
+            "text": "こんにちは、テキスト読み上げシステムのテストです。",
+            "language": "ja",
+            "speaker": "Daisy Studious"
+        }
+    )
+
+    assert response.status_code == 200
+    assert len(response.data) > 0
 
 
 def test_tts_french_generation(client):
@@ -115,22 +111,18 @@ def test_tts_french_generation(client):
     assert response.status_code == 200
     assert len(response.data) > 0
 
-# TODO in API P1
-# @pytest.mark.integration
-# def test_tts_chinese_generation(client):
-#     """Test real TTS generation for Chinese text."""
-#     response = client.post(
-#         "/tts",
-#         json={
-#             "text": "你好，这是文本转语音系统的测试。",
-#             "language": "zh-cn"
-#         }
-#     )
-    
-#     # May return 500 if default speaker doesn't support Chinese well
-#     # assert response.status_code in [200, 500]
-#     # if response.status_code == 200:
-#     #     assert len(response.data) > 0
+def test_tts_chinese_generation(client):
+    """Test real TTS generation for Chinese text."""
+    response = client.post(
+        "/tts",
+        json={
+            "text": "你好，这是文本转语音系统的测试。",
+            "language": "zh-cn"
+        }
+    )
+
+    assert response.status_code == 200
+    assert len(response.data) > 0
 
 
 def test_tts_default_speaker_selection(client):

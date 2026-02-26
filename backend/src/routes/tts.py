@@ -36,8 +36,12 @@ SUPPORTED_LANGUAGES = {
 # These speakers are selected for natural pronunciation in each language
 DEFAULT_SPEAKERS = {
     "en": "Claribel Dervla",
+    "ko": "Daisy Studious",
+    "fr": "Abrahan Mack", 
+    "zh-cn": "Abrahan Mack", 
+    "ja": "Daisy Studious",
+    # other speakers are out of scope
     "es": "Abrahan Mack",
-    "fr": "Abrahan Mack", # works well
     "de": "Abrahan Mack",
     "it": "Abrahan Mack",
     "pt": "Abrahan Mack",
@@ -47,10 +51,7 @@ DEFAULT_SPEAKERS = {
     "nl": "Abrahan Mack",
     "cs": "Abrahan Mack",
     "ar": "Abrahan Mack",
-    "zh-cn": "Abrahan Mack", # TODO find in api p1
-    "ja": "Abrahan Mack", # TODO find in api p1
     "hu": "Abrahan Mack",
-    "ko": "Daisy Studious",
     "hi": "Abrahan Mack"
 }
 
