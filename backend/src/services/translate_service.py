@@ -50,3 +50,32 @@ def translate_text(
         }
     except Exception as e:
         raise Exception(f"Translation failed: {str(e)}")
+
+
+def get_supported_languages() -> Dict[str, list]:
+    """
+    Get list of supported source and target languages from DeepL.
+    
+    Returns:
+        Dictionary with 'source' and 'target' language lists
+        Each language has 'code' and 'name' fields
+    
+    Raises:
+        Exception: If fetching languages fails
+    """
+    try:
+        source_langs = _client.get_source_languages()
+        target_langs = _client.get_target_languages()
+        
+        return {
+            "source": [
+                {"code": lang.code, "name": lang.name}
+                for lang in source_langs
+            ],
+            "target": [
+                {"code": lang.code, "name": lang.name}
+                for lang in target_langs
+            ]
+        }
+    except Exception as e:
+        raise Exception(f"Failed to fetch supported languages: {str(e)}")

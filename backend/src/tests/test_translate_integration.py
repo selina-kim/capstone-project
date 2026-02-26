@@ -75,3 +75,51 @@ def test_translate_real_api_complex_text(client):
     assert "translatedText" in data
     assert len(data["translatedText"]) > 0
     assert data["translatedText"] != complex_text
+
+
+def test_get_supported_languages_real_api(client):
+    """Test fetching real supported languages from DeepL API."""
+    start_time = time.time()
+    response = client.get("/translate/languages")
+    elapsed_time = time.time() - start_time
+    
+    print(f"\n[TIMING] Get supported languages: {elapsed_time:.3f}s")
+    
+    data = json.loads(response.data)
+    
+    # verify response structure
+    assert response.status_code == 200
+    assert "source" in data
+    assert "target" in data
+    assert isinstance(data["source"], list)
+    assert isinstance(data["target"], list)
+    
+    # verify we got actual languages
+    assert len(data["source"]) > 0
+    assert len(data["target"]) > 0
+    
+    # verify language structure (each should have code and name)
+    for lang in data["source"]:
+        assert "code" in lang
+        assert "name" in lang
+        assert len(lang["code"]) >= 2
+        assert len(lang["name"]) > 0
+    
+    for lang in data["target"]:
+        assert "code" in lang
+        assert "name" in lang
+        assert len(lang["code"]) >= 2
+        assert len(lang["name"]) > 0
+    
+    # verify common languages are present
+    source_codes = [lang["code"] for lang in data["source"]]
+    target_codes = [lang["code"] for lang in data["target"]]
+    
+    # check for common source languages
+    assert "EN" in source_codes
+    assert "ES" in source_codes or "FR" in source_codes
+    
+    # check for common target languages we use in tests
+    assert "KO" in target_codes
+    assert "JA" in target_codes
+    assert "ZH" in target_codes or "ZH-HANS" in target_codes  # Chinese simplified

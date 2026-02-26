@@ -252,3 +252,69 @@ def test_translate_empty_string(client, monkeypatch):
     # verify 400 Bad Request, error message
     assert response.status_code == 400
     assert "Missing text or target_lang" in data["error"]
+
+
+def test_get_supported_languages_success(client, monkeypatch):
+    """Test successful retrieval of supported languages."""
+    # mock language objects
+    class MockLanguage:
+        def __init__(self, code, name):
+            self.code = code
+            self.name = name
+    
+    class MockTranslator:
+        def get_source_languages(self):
+            return [
+                MockLanguage("EN", "English"),
+                MockLanguage("FR", "French"),
+                MockLanguage("DE", "German")
+            ]
+        
+        def get_target_languages(self):
+            return [
+                MockLanguage("ES", "Spanish"),
+                MockLanguage("KO", "Korean"),
+                MockLanguage("JA", "Japanese"),
+                MockLanguage("ZH", "Chinese (simplified)")
+            ]
+    
+    monkeypatch.setattr("services.translate_service._client", MockTranslator())
+    monkeypatch.setenv("DEEPL_API_KEY", "test_api_key_12345")
+    
+    # send GET request
+    response = client.get("/translate/languages")
+    data = json.loads(response.data)
+    
+    # verify response structure
+    assert response.status_code == 200
+    assert "source" in data
+    assert "target" in data
+    assert isinstance(data["source"], list)
+    assert isinstance(data["target"], list)
+    
+    # verify source languages
+    assert len(data["source"]) == 3
+    assert data["source"][0]["code"] == "EN"
+    assert data["source"][0]["name"] == "English"
+    
+    # verify target languages
+    assert len(data["target"]) == 4
+    assert data["target"][0]["code"] == "ES"
+    assert data["target"][1]["code"] == "KO"
+
+
+def test_get_supported_languages_api_error(client, monkeypatch):
+    """Test error handling when fetching languages fails."""
+    class MockTranslator:
+        def get_source_languages(self):
+            raise Exception("DeepL API error")
+    
+    monkeypatch.setattr("services.translate_service._client", MockTranslator())
+    monkeypatch.setenv("DEEPL_API_KEY", "test_api_key_12345")
+    
+    response = client.get("/translate/languages")
+    data = json.loads(response.data)
+    
+    assert response.status_code == 500
+    assert "error" in data
+    assert "Failed to fetch supported languages" in data["error"]
