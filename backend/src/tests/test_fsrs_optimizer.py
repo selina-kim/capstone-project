@@ -191,6 +191,7 @@ class TestOptimizer:
             _ = optimizer.compute_optimal_retention(parameters=DEFAULT_PARAMETERS)
 
     def test_optimal_retention_few_review_logs(self):
+        # can't compute optimal retention review logs fewer than 512
         review_logs = get_revlogs()
         few_revlogs = review_logs[:100]
 
@@ -199,6 +200,7 @@ class TestOptimizer:
             _ = optimizer.compute_optimal_retention(parameters=DEFAULT_PARAMETERS)
 
     def test_optimal_retention_no_review_duration(self):
+        # can't compute optimal retention if review logs don't have review durations
         review_logs = get_revlogs()
 
         review_log_without_review_duration = ReviewLog(
@@ -215,6 +217,7 @@ class TestOptimizer:
             _ = optimizer.compute_optimal_retention(parameters=DEFAULT_PARAMETERS)
 
     def test_simulated_costs(self):
+        # test the simulated costs of different retention levels on the same review logs and parameters
         review_logs = get_revlogs()
 
         optimizer = Optimizer(review_logs=review_logs)
