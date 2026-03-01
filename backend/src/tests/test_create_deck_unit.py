@@ -1,10 +1,5 @@
 """
 Pure unit tests for create-deck (no conftest fixtures, no real DB).
-
-Why:
-- Your repo's conftest app/client fixtures depend on db_schema() loading an SQL file,
-  which fails in your environment (FileNotFoundError).
-- These tests stay isolated and test logic only.
 """
 
 import json
