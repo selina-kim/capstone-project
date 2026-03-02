@@ -2,10 +2,12 @@ import os
 from flask import Flask
 from routes.dictionary import *
 from routes.translate import *
+# from routes.fsrs import *                 # TODO uncomment
 from routes.tts import *
 from routes.auth import auth_bp
 from routes.images import images_bp
 from routes.decks import decks_bp
+from routes.cards import cards_bp
 from dotenv import load_dotenv
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
@@ -41,9 +43,11 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(define_bp)
     app.register_blueprint(translate_bp)
+    # app.register_blueprint(fsrs_bp)       # TODO uncomment
     app.register_blueprint(tts_bp)
     app.register_blueprint(images_bp)
     app.register_blueprint(decks_bp)
+    app.register_blueprint(cards_bp)
 
     return app
 

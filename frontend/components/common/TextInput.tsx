@@ -1,10 +1,10 @@
-import { InputLabel } from "@/components/common/InputLabel";
 import { COLORS } from "@/constants/colors";
 import {
   TextInput as RNTextInput,
   TextInputProps as RNTextInputProps,
   View,
 } from "react-native";
+import { CText } from "./CText";
 
 interface TextInputProps extends RNTextInputProps {
   label: string;
@@ -24,7 +24,7 @@ export const TextInput = ({
 }: TextInputProps) => {
   return (
     <View>
-      <InputLabel>{label}</InputLabel>
+      <CText variant="inputLabel">{label}</CText>
       <RNTextInput
         value={value}
         onChangeText={onChangeText}
@@ -39,6 +39,7 @@ export const TextInput = ({
             paddingVertical: 8,
             paddingHorizontal: 12,
             color: COLORS.text.primary,
+            outlineColor: COLORS.accent.primary,
           },
           multiline && {
             minHeight: 80,

@@ -1,6 +1,8 @@
+import { ChevronDownIcon } from "@/assets/icons/ChevronDownIcon";
 import { COLORS } from "@/constants/colors";
 import { useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
+import { CText } from "./CText";
 
 interface DropdownProps {
   value: string;
@@ -36,16 +38,21 @@ export const Dropdown = ({
           alignItems: "center",
         }}
       >
-        <Text
+        <CText
           style={{
             color: value ? COLORS.text.secondary : COLORS.text.secondary,
           }}
         >
           {value || placeholder}
-        </Text>
-        <Text style={{ color: COLORS.text.secondary }}>
-          {isOpen ? "▲" : "▼"}
-        </Text>
+        </CText>
+        <View
+          style={{
+            opacity: 0.5,
+            transform: [{ rotate: isOpen ? "180deg" : "0deg" }],
+          }}
+        >
+          <ChevronDownIcon stroke={COLORS.text.primary} />
+        </View>
       </Pressable>
 
       {isOpen && (
@@ -80,14 +87,14 @@ export const Dropdown = ({
                       : COLORS.backgroundSecondary,
                 }}
               >
-                <Text
+                <CText
                   style={{
                     color: COLORS.text.secondary,
                     fontWeight: "normal",
                   }}
                 >
                   {option}
-                </Text>
+                </CText>
               </Pressable>
             ))}
           </ScrollView>

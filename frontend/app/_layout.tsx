@@ -1,10 +1,17 @@
 import { AppLogo } from "@/assets/AppLogo";
 import { ProfileIcon } from "@/assets/icons/ProfileIcon";
 import { COLORS } from "@/constants/colors";
+import { Arimo_400Regular, Arimo_700Bold } from "@expo-google-fonts/arimo";
+import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { Pressable, View } from "react-native";
 
 export default function RootLayout() {
+  useFonts({
+    Arimo_400Regular,
+    Arimo_700Bold,
+  });
+
   return (
     <Stack
       screenOptions={{

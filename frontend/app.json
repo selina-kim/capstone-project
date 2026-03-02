@@ -36,7 +36,16 @@
           }
         }
       ],
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "node_modules/@expo-google-fonts/arimo/400Regular/Arimo_400Regular.ttf",
+            "node_modules/@expo-google-fonts/arimo/700Bold/Arimo_700Bold.ttf"
+          ]
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
