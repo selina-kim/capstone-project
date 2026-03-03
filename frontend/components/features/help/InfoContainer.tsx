@@ -13,26 +13,30 @@ export const InfoContainer = () => {
           paddingHorizontal: 25,
         }}
       >
-        <View style={{ 
-          paddingVertical: 30,
-          paddingHorizontal: 30,
-          borderWidth: 2,
-          borderColor: COLORS.icon.outlinePrimary,
-          borderRadius: 16,}}
+        <View
+          style={{
+            paddingVertical: 30,
+            paddingHorizontal: 30,
+            borderWidth: 2,
+            borderColor: COLORS.icon.outlinePrimary,
+            borderRadius: 16,
+          }}
         >
-          <CText style={{paddingBottom: 10}} bold>
+          <CText style={{ paddingBottom: 10 }} bold>
             Welcome to Languine
           </CText>
           <CText
             style={{
               color: COLORS.text.secondary,
-              paddingBottom: 20
+              paddingBottom: 20,
             }}
           >
             Your comprehensive language learning flashcard application!
           </CText>
-          <CText style={{color: COLORS.text.secondary}}>
-            Languine uses spaced repetition to help you learn and retain vocabulary more effectively. The app intelligently schedules card reviews based on your performance, ensuring optimal learning.
+          <CText style={{ color: COLORS.text.secondary }}>
+            Languine uses spaced repetition to help you learn and retain
+            vocabulary more effectively. The app intelligently schedules card
+            reviews based on your performance, ensuring optimal learning.
           </CText>
         </View>
       </View>

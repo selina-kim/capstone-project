@@ -56,15 +56,11 @@ export const StepContainer = ({
             </View>
             <View style={{ marginLeft: 10 }}>
               <CText bold>{title}</CText>
-              <CText style={{ color: COLORS.text.secondary }}>
-                {step}
-              </CText>
+              <CText style={{ color: COLORS.text.secondary }}>{step}</CText>
             </View>
           </View>
 
-          <CText style={{ color: COLORS.text.secondary }}>
-            {description}
-          </CText>
+          <CText style={{ color: COLORS.text.secondary }}>{description}</CText>
         </View>
       </View>
     </View>
