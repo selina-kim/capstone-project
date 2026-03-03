@@ -36,10 +36,12 @@ const fonts = StyleSheet.create({
 });
 
 const variants = StyleSheet.create({
-  base: { color: COLORS.text.primary },
+  base: { color: COLORS.text.primary, fontSize: 16, lineHeight: 24 },
   inputLabel: {
     color: COLORS.text.primary,
     marginBottom: 8,
+    fontSize: 16,
+    lineHeight: 24,
     ...fonts.bold,
   },
 });
