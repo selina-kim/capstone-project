@@ -40,6 +40,9 @@ export const TextInput = ({
             paddingHorizontal: 12,
             color: COLORS.text.primary,
             outlineColor: COLORS.accent.primary,
+            fontSize: 16,
+            lineHeight: 24,
+            fontFamily: "Arimo_400Regular",
           },
           multiline && {
             minHeight: 80,

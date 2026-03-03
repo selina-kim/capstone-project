@@ -22,6 +22,7 @@ export const NoDecksBanner = () => {
           <DecksIcon />
         </View>
         <CText
+          variant="containerLabel"
           style={{
             textAlign: "center",
           }}

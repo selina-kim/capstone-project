@@ -44,4 +44,15 @@ const variants = StyleSheet.create({
     lineHeight: 24,
     ...fonts.bold,
   },
+  containerLabel: {
+    color: COLORS.text.primary,
+    fontSize: 18,
+    lineHeight: 24,
+  },
+  title: {
+    color: COLORS.text.secondary,
+    fontSize: 18,
+    lineHeight: 28,
+    ...fonts.bold,
+  },
 });
