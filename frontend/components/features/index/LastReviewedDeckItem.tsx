@@ -13,36 +13,27 @@ export const LastReviewedDeckItem = ({
   lastReviewed,
 }: LastReviewedDeckItemProps) => {
   return (
-    <View style={{ width: "100%" }}>
-      <View
+    <View
+      style={{
+        paddingVertical: 10,
+        paddingHorizontal: 25,
+        borderWidth: 3,
+        borderColor: COLORS.icon.outlineSecondary,
+        borderRadius: 16,
+        backgroundColor: COLORS.backgroundPrimary,
+        ...SHADOWS.default,
+      }}
+    >
+      <CText variant="containerLabel" bold numberOfLines={1}>
+        {deckName}
+      </CText>
+      <CText
         style={{
-          rowGap: "10px",
-          paddingVertical: 10,
-          paddingHorizontal: 25,
+          color: COLORS.text.secondary,
         }}
       >
-        <View
-          style={{
-            paddingVertical: 10,
-            paddingHorizontal: 25,
-            borderWidth: 3,
-            borderColor: COLORS.icon.outlineSecondary,
-            borderRadius: 16,
-            ...SHADOWS.default,
-          }}
-        >
-          <CText variant="containerLabel" bold>
-            {deckName}
-          </CText>
-          <CText
-            style={{
-              color: COLORS.text.secondary,
-            }}
-          >
-            Last reviewed: {lastReviewed}
-          </CText>
-        </View>
-      </View>
+        Last reviewed: {lastReviewed}
+      </CText>
     </View>
   );
 };

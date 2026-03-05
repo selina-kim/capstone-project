@@ -9,6 +9,22 @@ const sampleDecksList = [
   { name: "Korean Vocab", lastReviewed: new Date("2026-02-27") },
   { name: "French Vocab", lastReviewed: new Date("2026-02-22") },
   { name: "Japanese Vocab", lastReviewed: new Date("2026-02-24") },
+  {
+    name: "Really long title long long long long",
+    lastReviewed: new Date("2026-02-24"),
+  },
+  {
+    name: "Title 1",
+    lastReviewed: new Date("2026-02-24"),
+  },
+  {
+    name: "Title 2",
+    lastReviewed: new Date("2026-02-24"),
+  },
+  {
+    name: "Title 3",
+    lastReviewed: new Date("2026-02-24"),
+  },
 ];
 
 export default function Index() {
@@ -34,13 +50,22 @@ export default function Index() {
     >
       <CardsDueBanner countDueCards={5} />
       {label}
-      {sampleDecksList.map((deck) => (
-        <LastReviewedDeckItem
-          key={`last_reviewed_deck_card_${deck.name}`}
-          deckName={deck.name}
-          lastReviewed={deck.lastReviewed.toLocaleDateString()}
-        />
-      ))}
+      <View
+        style={{
+          display: "flex",
+          marginHorizontal: 25,
+          marginVertical: 10,
+          rowGap: 20,
+        }}
+      >
+        {sampleDecksList.map((deck) => (
+          <LastReviewedDeckItem
+            key={`last_reviewed_deck_card_${deck.name}`}
+            deckName={deck.name}
+            lastReviewed={deck.lastReviewed.toLocaleDateString()}
+          />
+        ))}
+      </View>
       <View
         style={{
           marginHorizontal: 50,
