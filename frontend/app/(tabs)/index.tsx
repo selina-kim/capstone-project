@@ -4,25 +4,27 @@ import { CardsDueBanner } from "@/components/features/index/CardsDueBanner";
 import { LastReviewedDecks } from "@/components/features/index/LastReviewedDecks";
 import { ScrollView, View } from "react-native";
 
-type LabelProps = {
-  text: string;
-};
-
-const Label = ({ text }: LabelProps) => (
-  <CText
-    variant="title"
-    style={{
-      textAlign: "left",
-      paddingHorizontal: 25,
-      paddingTop: 25,
-      paddingBottom: 5,
-    }}
-  >
-    {text}
-  </CText>
-);
+// TODO: placeholder until we have real data
+const sampleDecksList = [
+  { name: "Korean Vocab", lastReviewed: new Date("2026-02-27") },
+  { name: "French Vocab", lastReviewed: new Date("2026-02-22") },
+  { name: "Japanese Vocab", lastReviewed: new Date("2026-02-24") },
+];
 
 export default function Index() {
+  const label = (
+    <CText
+      variant="title"
+      style={{
+        textAlign: "left",
+        paddingHorizontal: 25,
+        paddingTop: 25,
+        paddingBottom: 5,
+      }}
+    >
+      Last Reviewed Decks
+    </CText>
+  );
   return (
     <ScrollView
       style={{
@@ -31,10 +33,14 @@ export default function Index() {
       }}
     >
       <CardsDueBanner countDueCards={5} />
-      <Label text="Last Reviewed Decks" />
-      <LastReviewedDecks deckName="Korean Vocab" lastReviewed="2-27-2026" />
-      <LastReviewedDecks deckName="French Vocab" lastReviewed="2-22-2026" />
-      <LastReviewedDecks deckName="Japanese Vocab" lastReviewed="2-24-2026" />
+      {label}
+      {sampleDecksList.map((deck) => (
+        <LastReviewedDecks
+          key={`last_reviewed_deck_card_${deck.name}`}
+          deckName={deck.name}
+          lastReviewed={deck.lastReviewed.toLocaleDateString()}
+        />
+      ))}
       <View
         style={{
           marginHorizontal: 50,
