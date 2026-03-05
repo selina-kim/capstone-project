@@ -10,9 +10,7 @@ type CardsDueBannerProps = {
   countDueCards: number;
 };
 
-export const CardsDueBanner = ({
-  countDueCards
-}: CardsDueBannerProps) => {
+export const CardsDueBanner = ({ countDueCards }: CardsDueBannerProps) => {
   return (
     <View style={{ width: "100%" }}>
       <View
@@ -32,7 +30,13 @@ export const CardsDueBanner = ({
             ...SHADOWS.default,
           }}
         >
-          <View style={{ flexDirection: "row", marginBottom: 20, alignItems: "center" }}>
+          <View
+            style={{
+              flexDirection: "row",
+              marginBottom: 20,
+              alignItems: "center",
+            }}
+          >
             <View
               style={[
                 {
@@ -55,22 +59,25 @@ export const CardsDueBanner = ({
                   },
                 ]}
               >
-                <OpenBookIcon 
+                <OpenBookIcon
                   stroke={COLORS.icon.outlineSecondary}
                   fill={COLORS.icon.fillSecondary}
                 />
               </View>
             </View>
             <View style={{ marginLeft: 12, flex: 1 }}>
-              <CText style={{ 
-                fontSize: 24,
-                lineHeight: 28,
-              }} 
-              bold
+              <CText
+                style={{
+                  fontSize: 24,
+                  lineHeight: 28,
+                }}
+                bold
               >
                 {countDueCards} Cards Due!
               </CText>
-              <CText style={{ color: COLORS.text.secondary}}>Review your flashcards</CText>
+              <CText style={{ color: COLORS.text.secondary }}>
+                Review your flashcards
+              </CText>
             </View>
           </View>
           <RouteButton text="Start Studying" route="revision" />

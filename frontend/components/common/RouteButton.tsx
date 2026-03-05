@@ -9,13 +9,10 @@ type RouteButtonProps = {
   route: "index" | "decks" | "revision" | "help" | "settings";
 };
 
-export const RouteButton = ({ 
-    text, 
-    route 
-  }: RouteButtonProps) => {
+export const RouteButton = ({ text, route }: RouteButtonProps) => {
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
-  
+
   const buildRoute = (page: string): RelativePathString => {
     return `${page}` as RelativePathString;
   };

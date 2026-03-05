@@ -33,12 +33,13 @@ export default function Index() {
     >
       <CardsDueBanner countDueCards={5} />
       <Label text="Last Reviewed Decks" />
-      < LastReviewedDecks deckName="Korean Vocab" lastReviewed="2-27-2026" />
-      < LastReviewedDecks deckName="French Vocab" lastReviewed="2-22-2026" />
-      < LastReviewedDecks deckName="Japanese Vocab" lastReviewed="2-24-2026" />
-      <View style={{ 
-        marginHorizontal: 50, 
-        marginBottom: 30 
+      <LastReviewedDecks deckName="Korean Vocab" lastReviewed="2-27-2026" />
+      <LastReviewedDecks deckName="French Vocab" lastReviewed="2-22-2026" />
+      <LastReviewedDecks deckName="Japanese Vocab" lastReviewed="2-24-2026" />
+      <View
+        style={{
+          marginHorizontal: 50,
+          marginBottom: 30,
         }}
       >
         <RouteButton text="View Decks" route="decks" />

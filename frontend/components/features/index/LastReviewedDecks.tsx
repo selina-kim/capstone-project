@@ -8,10 +8,10 @@ type StepContainerProps = {
   lastReviewed: string;
 };
 
-export const LastReviewedDecks = ({ 
-  deckName, 
-  lastReviewed 
-} : StepContainerProps) => {
+export const LastReviewedDecks = ({
+  deckName,
+  lastReviewed,
+}: StepContainerProps) => {
   return (
     <View style={{ width: "100%" }}>
       <View
