@@ -6,7 +6,7 @@ import { Pressable, ScrollView, View } from "react-native";
 import { CText } from "./CText";
 
 interface DropdownProps {
-  value: string;
+  value: string | null;
   options: string[];
   onSelect: (value: string) => void;
   placeholder?: string;
@@ -39,11 +39,7 @@ export const Dropdown = ({
           alignItems: "center",
         }}
       >
-        <CText
-          style={{
-            color: value ? COLORS.text.secondary : COLORS.text.secondary,
-          }}
-        >
+        <CText style={!value && { color: COLORS.text.tertiary }}>
           {value || placeholder}
         </CText>
         <View

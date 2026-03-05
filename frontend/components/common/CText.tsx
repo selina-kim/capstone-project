@@ -2,10 +2,10 @@ import { COLORS } from "@/constants/colors";
 import React from "react";
 import { StyleSheet, Text, TextProps } from "react-native";
 
-type VariantType = keyof typeof variants;
+type TextVariantType = keyof typeof textVariants;
 
 export interface CTextProps extends TextProps {
-  variant?: VariantType;
+  variant?: TextVariantType;
   bold?: boolean;
 }
 
@@ -18,7 +18,7 @@ export const CText: React.FC<CTextProps> = ({
 }) => {
   return (
     <Text
-      style={[bold ? fonts.bold : fonts.base, variants[variant], style]}
+      style={[bold ? fonts.bold : fonts.base, textVariants[variant], style]}
       {...props}
     >
       {children}
@@ -26,7 +26,7 @@ export const CText: React.FC<CTextProps> = ({
   );
 };
 
-const fonts = StyleSheet.create({
+export const fonts = StyleSheet.create({
   base: {
     fontFamily: "Arimo_400Regular",
   },
@@ -35,7 +35,7 @@ const fonts = StyleSheet.create({
   },
 });
 
-const variants = StyleSheet.create({
+export const textVariants = StyleSheet.create({
   base: { color: COLORS.text.primary, fontSize: 16, lineHeight: 24 },
   inputLabel: {
     color: COLORS.text.primary,

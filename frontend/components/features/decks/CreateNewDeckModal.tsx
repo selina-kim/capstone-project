@@ -26,7 +26,7 @@ export const CreateNewDeckModal = ({
   onClose,
 }: CreateNewDeckModalProps) => {
   const [deckName, setDeckName] = useState("");
-  const [language, setLanguage] = useState("");
+  const [language, setLanguage] = useState<string | null>(null);
   const [description, setDescription] = useState("");
 
   const onCreateDeck = () => {
@@ -38,7 +38,7 @@ export const CreateNewDeckModal = ({
   useEffect(() => {
     if (!isOpen) {
       setDeckName("");
-      setLanguage("");
+      setLanguage(null);
       setDescription("");
     }
   }, [isOpen]);

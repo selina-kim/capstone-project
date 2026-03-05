@@ -4,7 +4,7 @@ import {
   TextInputProps as RNTextInputProps,
   View,
 } from "react-native";
-import { CText } from "./CText";
+import { CText, textVariants } from "./CText";
 
 interface TextInputProps extends RNTextInputProps {
   label: string;
@@ -38,11 +38,8 @@ export const TextInput = ({
             borderRadius: 8,
             paddingVertical: 8,
             paddingHorizontal: 12,
-            color: COLORS.text.primary,
             outlineColor: COLORS.accent.primary,
-            fontSize: 16,
-            lineHeight: 24,
-            fontFamily: "Arimo_400Regular",
+            ...textVariants.base,
           },
           multiline && {
             minHeight: 80,
