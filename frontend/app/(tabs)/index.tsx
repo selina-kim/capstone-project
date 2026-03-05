@@ -1,9 +1,8 @@
+import { CText } from "@/components/common/CText";
+import { RouteButton } from "@/components/common/RouteButton";
 import { CardsDueBanner } from "@/components/features/index/CardsDueBanner";
 import { LastReviewedDecks } from "@/components/features/index/LastReviewedDecks";
-import { RouteButton } from "@/components/common/RouteButton";
-import { CText } from "@/components/common/CText";
-import { COLORS } from "@/constants/colors";
-import { View, ScrollView } from "react-native";
+import { ScrollView, View } from "react-native";
 
 type LabelProps = {
   text: string;

@@ -1,10 +1,10 @@
+import { OpenBookIcon } from "@/assets/icons/OpenBookIcon";
 import { CText } from "@/components/common/CText";
+import { RouteButton } from "@/components/common/RouteButton";
 import { COLORS } from "@/constants/colors";
 import { SHADOWS } from "@/constants/shadows";
-import { OpenBookIcon } from "@/assets/icons/OpenBookIcon";
-import { RouteButton } from "@/components/common/RouteButton";
 import React from "react";
-import { StyleProp, View, ViewStyle } from "react-native";
+import { View } from "react-native";
 
 type CardsDueBannerProps = {
   countDueCards: number;

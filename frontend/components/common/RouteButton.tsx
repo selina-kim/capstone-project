@@ -1,7 +1,6 @@
 import { CText } from "@/components/common/CText";
 import { COLORS } from "@/constants/colors";
 import { RelativePathString, useRouter } from "expo-router";
-import { useState } from "react";
 import { Pressable, View } from "react-native";
 
 type RouteButtonProps = {
@@ -11,7 +10,6 @@ type RouteButtonProps = {
 
 export const RouteButton = ({ text, route }: RouteButtonProps) => {
   const router = useRouter();
-  const [modalVisible, setModalVisible] = useState(false);
 
   const buildRoute = (page: string): RelativePathString => {
     return `${page}` as RelativePathString;
