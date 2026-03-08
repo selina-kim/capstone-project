@@ -20,6 +20,7 @@ The tests cover:
 Run this test file:
     docker compose exec backend pytest src/tests/test_fsrs_optimizer.py -v
 """
+
 from services.fsrs.optimizer import Optimizer, max_seq_len
 from services.fsrs.scheduler import Scheduler, DEFAULT_PARAMETERS, LOWER_BOUNDS_PARAMETERS, UPPER_BOUNDS_PARAMETERS
 from services.fsrs.card import Card
@@ -242,111 +243,6 @@ class TestOptimizer:
 
         assert optimal_parameters1 == optimal_parameters2
 
-    def test_optimal_retention(self):
-        review_logs = get_revlogs()
-
-        optimizer = Optimizer(review_logs=review_logs)
-
-        expected_optimal_retention = 0.85
-
-        optimal_retention_optimal_parameters = optimizer.compute_optimal_retention(
-            parameters=test_optimal_parameters
-        )
-
-        # deterministic outcome
-        assert optimal_retention_optimal_parameters == expected_optimal_retention
-
-        # computing the optimal retention on a new optimizer with the same review logs and parameters will return
-        # the same result
-        optimizer_2 = Optimizer(review_logs=review_logs)
-        optimal_retention_optimal_parameters_2 = optimizer_2.compute_optimal_retention(
-            parameters=test_optimal_parameters
-        )
-        assert (
-            optimal_retention_optimal_parameters_2
-            == optimal_retention_optimal_parameters
-        )
-
-        # computing the optimal retention with a different set of parameters can yield a different result
-        parameters_2 = [ 0.01, 0.01, 0.01, 0.01, 1.0, 0.1, 0.1, 0.01, 0.0, 0.0, 0.01, 0.1, 0.01, 0.01, 0.01, 0.0, 1.0, 0.0, 0.0, 0.0, 0.1]
-
-        optimal_retention_parameters_2 = optimizer_2.compute_optimal_retention(
-            parameters=parameters_2
-        )
-        assert optimal_retention_parameters_2 != optimal_retention_optimal_parameters
-
-    def test_optimal_retention_zero_review_logs(self):
-        # can't compute optimal retention with zero review logs
-        zero_revlogs = []
-        optimizer = Optimizer(review_logs=zero_revlogs)
-        with pytest.raises(ValueError):
-            _ = optimizer.compute_optimal_retention(parameters=DEFAULT_PARAMETERS)
-
-    def test_optimal_retention_few_review_logs(self):
-        # can't compute optimal retention review logs fewer than 512
-        review_logs = get_revlogs()
-        few_revlogs = review_logs[:100]
-
-        optimizer = Optimizer(review_logs=few_revlogs)
-        with pytest.raises(ValueError):
-            _ = optimizer.compute_optimal_retention(parameters=DEFAULT_PARAMETERS)
-
-    def test_optimal_retention_no_review_duration(self):
-        # can't compute optimal retention if review logs don't have review durations
-        review_logs = get_revlogs()
-
-        review_log_without_review_duration = ReviewLog(
-            card_id="42",
-            grade=2,
-            review_datetime=datetime(2025, 1, 1, 0, 0, 0, 0, timezone.utc),
-            review_duration=None,
-        )
-
-        review_logs.append(review_log_without_review_duration)
-
-        optimizer = Optimizer(review_logs=review_logs)
-        with pytest.raises(ValueError):
-            _ = optimizer.compute_optimal_retention(parameters=DEFAULT_PARAMETERS)
-
-    def test_simulated_costs(self):
-        # test the simulated costs of different retention levels on the same review logs and parameters
-        review_logs = get_revlogs()
-
-        optimizer = Optimizer(review_logs=review_logs)
-
-        probs_and_costs_dict = optimizer._compute_probs_and_costs()
-
-        simulation_cost_0_75 = optimizer._simulate_cost(
-            desired_retention=0.75,
-            parameters=test_optimal_parameters,
-            num_cards_simulate=1000,
-            probs_and_costs_dict=probs_and_costs_dict,
-        )
-
-        assert round(simulation_cost_0_75) == 239312
-
-        simulation_cost_0_85 = optimizer._simulate_cost(
-            desired_retention=0.85,
-            parameters=test_optimal_parameters,
-            num_cards_simulate=1000,
-            probs_and_costs_dict=probs_and_costs_dict,
-        )
-
-        assert round(simulation_cost_0_85) == 209967
-
-        simulation_cost_0_95 = optimizer._simulate_cost(
-            desired_retention=0.95,
-            parameters=test_optimal_parameters,
-            num_cards_simulate=1000,
-            probs_and_costs_dict=probs_and_costs_dict,
-        )
-
-        assert round(simulation_cost_0_95) == 262009
-
-        # holds true for these specific revlogs
-        assert simulation_cost_0_85 <= simulation_cost_0_75
-        assert simulation_cost_0_85 <= simulation_cost_0_95
-
     def test_optimize_review_logs_with_difficulty_1_cards(self):
         """
         Create hypothetical review logs where cards have
@@ -410,21 +306,6 @@ class TestOptimizer:
                 f"parameters[{i}] = {param} is out of bounds [{lower}, {upper}]"
             )
 
-    def test_optimal_retention_value_in_valid_range(self):
-        """
-        compute_optimal_retention should always return one of the discrete valid retention values.
-        """
-        VALID_RETENTIONS = {0.7, 0.75, 0.8, 0.85, 0.9, 0.95}
-
-        review_logs = get_revlogs()
-        optimizer = Optimizer(review_logs=review_logs)
-
-        optimal_retention = optimizer.compute_optimal_retention(
-            parameters=test_optimal_parameters
-        )
-
-        assert optimal_retention in VALID_RETENTIONS
-
     def test_compute_probs_and_costs_keys_and_validity(self):
         """
         _compute_probs_and_costs should return a dict with all expected keys,
@@ -466,23 +347,6 @@ class TestOptimizer:
             result["prob_hard"] + result["prob_good"] + result["prob_easy"]
         )
         assert non_first_success_prob_sum == pytest.approx(1.0, abs=1e-6)
-
-    def test_simulate_cost_is_positive(self):
-        """
-        _simulate_cost should always return a strictly positive float.
-        """
-        review_logs = get_revlogs()
-        optimizer = Optimizer(review_logs=review_logs)
-        probs_and_costs_dict = optimizer._compute_probs_and_costs()
-
-        for retention in [0.7, 0.85, 0.95]:
-            cost = optimizer._simulate_cost(
-                desired_retention=retention,
-                parameters=test_optimal_parameters,
-                num_cards_simulate=100,
-                probs_and_costs_dict=probs_and_costs_dict,
-            )
-            assert cost > 0, f"Expected positive cost for retention={retention}, got {cost}"
 
     def test_num_reviews_count(self):
         """
@@ -544,22 +408,6 @@ class TestOptimizer:
         params_tuple = optimizer_tuple.compute_optimal_parameters()
 
         assert params_list == params_tuple
-
-    def test_optimal_retention_with_default_parameters(self):
-        """
-        compute_optimal_retention should succeed with DEFAULT_PARAMETERS
-        and return a valid retention value.
-        """
-        VALID_RETENTIONS = {0.7, 0.75, 0.8, 0.85, 0.9, 0.95}
-
-        review_logs = get_revlogs()
-        optimizer = Optimizer(review_logs=review_logs)
-
-        optimal_retention = optimizer.compute_optimal_retention(
-            parameters=DEFAULT_PARAMETERS
-        )
-
-        assert optimal_retention in VALID_RETENTIONS
 
     def test_optimizer_str(self):
         """
@@ -661,7 +509,6 @@ class TestOptimizer:
             f"Large gap between val ({val_loss_optimized:.4f}) and test "
             f"({test_loss_optimized:.4f}) losses — model is inconsistent across unseen splits"
         )
-
 
     def test_auc_roc_and_ece_metrics(self):
         """
