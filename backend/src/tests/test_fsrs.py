@@ -1,3 +1,22 @@
+"""
+Unit tests for the Scheduler class in fsrs.scheduler.
+
+The tests cover:
+- Correct updating of Card attributes after reviews
+- Handling of edge cases in review scheduling
+- Serialization and deserialization of Card and ReviewLog objects
+- Correct transitions between Learning, Review, and Relearning states
+- Proper calculation of intervals, stability, difficulty, and retrievability
+- Enforcement of parameter bounds and validation of scheduler configuration
+- Correct behavior of rescheduling using historical review logs
+- Ensuring review operations do not mutate the original Card object
+- Consistency of equality, representation, and unique card identifiers
+- Performance checks for review scheduling and large-scale rescheduling
+
+Run this test file:
+    docker compose exec backend pytest src/tests/test_fsrs.py -v
+"""
+
 from services.fsrs.scheduler import Scheduler, STABILITY_MIN, DEFAULT_PARAMETERS, DIFFICULTY_MAX, DIFFICULTY_MIN
 from services.fsrs.card import Card
 from services.fsrs.learning_state import LearningState
