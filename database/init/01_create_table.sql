@@ -7,7 +7,13 @@ create table Users (
     display_name varchar(30) not null,
     timezone text not null,
     new_cards_per_day integer default 10,
-    desired_retention double precision default 0.9    
+    -- fsrs fields
+    desired_retention double precision default 0.9,
+    fsrs_parameters double precision[] default null, 
+    auto_optimize boolean default true not null,
+    num_reviews_per_optimize int default 256 not null, 
+    total_reviews int default 0 not null, 
+    reviews_since_last_optimize int default 0 not null
 );
 -- column definitions:
 -- u_id: primary key, storing user id from 'sub' field in Google ID Token
@@ -16,6 +22,11 @@ create table Users (
 -- timezone: user's timezone, stored as text (e.g., 'America/New_York')
 -- new_cards_per_day: number of new cards user wants to learn per day, default is 10
 -- desired_retention: user's desired card retention rate, default is 0.9 (90%)
+-- fsrs_parameters: array to store user's personalized FSRS parameters, default is null (will use default parameters until optimized)
+-- auto_optimize: whether to automatically optimize FSRS parameters based on review history, default is true
+-- num_reviews_per_optimize: number of reviews after which to run the FSRS optimization, default is 256
+-- total_reviews: total number of reviews the user has done, default is 0
+-- reviews_since_last_optimize: number of reviews since last optimization, default is 0
 
 -- Deck
 create table Decks (
