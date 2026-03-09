@@ -133,5 +133,6 @@ create table Review_Logs (
 -- index: all review history by card
 create index idx_review_logs_card ON Review_Logs(c_id);
 
--- TODO: maybe split file into multiple files
--- TODO: update schema_design.png
+-- Insert default test user for development and testing (temporary)
+INSERT INTO Users (u_id, email, display_name, timezone)
+VALUES ('test-user-id', 'test@example.com', 'Test User', 'UTC');
