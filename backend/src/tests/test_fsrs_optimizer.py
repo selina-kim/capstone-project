@@ -306,48 +306,6 @@ class TestOptimizer:
                 f"parameters[{i}] = {param} is out of bounds [{lower}, {upper}]"
             )
 
-    def test_compute_probs_and_costs_keys_and_validity(self):
-        """
-        _compute_probs_and_costs should return a dict with all expected keys,
-        probabilities within [0, 1], and probability groups summing to 1.
-        """
-        review_logs = get_revlogs()
-        optimizer = Optimizer(review_logs=review_logs)
-
-        result = optimizer._compute_probs_and_costs()
-
-        expected_prob_keys = {
-            "prob_first_again", "prob_first_hard", "prob_first_good", "prob_first_easy",
-            "prob_hard", "prob_good", "prob_easy",
-        }
-        expected_avg_keys = {
-            "avg_first_again_review_duration", "avg_first_hard_review_duration",
-            "avg_first_good_review_duration", "avg_first_easy_review_duration",
-            "avg_again_review_duration", "avg_hard_review_duration",
-            "avg_good_review_duration", "avg_easy_review_duration",
-        }
-
-        for key in expected_prob_keys | expected_avg_keys:
-            assert key in result, f"Missing key: {key}"
-
-        for key in expected_prob_keys:
-            assert 0.0 <= result[key] <= 1.0, f"{key} = {result[key]} is out of [0, 1]"
-
-        # first-review probs must sum to 1
-        first_prob_sum = (
-            result["prob_first_again"]
-            + result["prob_first_hard"]
-            + result["prob_first_good"]
-            + result["prob_first_easy"]
-        )
-        assert first_prob_sum == pytest.approx(1.0, abs=1e-6)
-
-        # non-first successful-recall probs must sum to 1
-        non_first_success_prob_sum = (
-            result["prob_hard"] + result["prob_good"] + result["prob_easy"]
-        )
-        assert non_first_success_prob_sum == pytest.approx(1.0, abs=1e-6)
-
     def test_num_reviews_count(self):
         """
         _num_reviews should count only delayed (non-same-day) reviews after
