@@ -6,7 +6,7 @@ create table Users (
     email varchar(255) unique not null,
     display_name varchar(30) not null,
     timezone text not null,
-    new_cards_per_day integer default 10,
+    new_cards_per_day integer default 10, 
     -- fsrs fields
     desired_retention double precision default 0.9,
     fsrs_parameters double precision[] default null, 
@@ -74,7 +74,7 @@ create table Cards (
     trans_example text,
     word_audio text,
     trans_audio text,
-    word_roman text not null,
+    word_roman text,
     trans_roman text,
     -- FSRS fields: 
     learning_state integer, 
