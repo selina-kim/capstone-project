@@ -55,4 +55,10 @@ export const textVariants = StyleSheet.create({
     lineHeight: 28,
     ...fonts.bold,
   },
+  google: {
+    color: COLORS.text.primary,
+    fontSize: 20,
+    lineHeight: 24,
+    ...fonts.bold,
+  },
 });

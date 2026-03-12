@@ -1,7 +1,7 @@
 import { COLORS } from "@/constants/colors";
 import { ReactNode } from "react";
 import { Pressable, PressableProps, StyleSheet, View } from "react-native";
-import { CText } from "./CText";
+import { CText, CTextProps } from "./CText";
 
 const buttonBaseStyle = StyleSheet.create({
   base: {
@@ -25,21 +25,30 @@ const buttonVariants = StyleSheet.create({
     borderColor: COLORS.text.primary,
     borderWidth: 2,
   },
+  google: {
+    height: 50,
+    backgroundColor: COLORS.button.fillSecondary,
+    borderColor: COLORS.button.outlinePrimary,
+    borderWidth: 2,
+  },
 });
 
-// const buttonTextProps: { [variant: string]: CTextProps } = {
-//   primary: {
-//     bold: true,
-//   },
-//   secondary: {
-//     bold: true,
-//   },
-// };
+const buttonTextProps: { [variant: string]: CTextProps } = {
+  primary: {
+    bold: true,
+  },
+  secondary: {
+    bold: true,
+  },
+  google: {
+    variant: "google",
+  },
+};
 
 type ButtonVariantType = keyof typeof buttonVariants;
 
 interface CButtonProps extends PressableProps {
-  variant: ButtonVariantType;
+  variant?: ButtonVariantType;
   label: string;
   Icon?: ReactNode;
 }
@@ -57,10 +66,10 @@ export const CButton: React.FC<CButtonProps> = ({
         typeof style === "function"
           ? (state) => [
               buttonBaseStyle.base,
-              buttonVariants[variant],
+              variant && buttonVariants[variant],
               style(state),
             ]
-          : [buttonBaseStyle.base, buttonVariants[variant], style]
+          : [buttonBaseStyle.base, variant && buttonVariants[variant], style]
       }
       {...props}
     >
@@ -70,7 +79,7 @@ export const CButton: React.FC<CButtonProps> = ({
           textAlign: "center",
         }}
         bold
-        // {...buttonTextProps[variant]}
+        {...(variant && buttonTextProps[variant])}
       >
         {label}
       </CText>

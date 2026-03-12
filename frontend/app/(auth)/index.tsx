@@ -1,11 +1,13 @@
 import { CButton } from "@/components/common/CButton";
-import { CText } from "@/components/common/CText";
+import { CText, fonts } from "@/components/common/CText";
 import { COLORS } from "@/constants/colors";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Alert, View } from "react-native";
 import { exchangeGoogleToken } from "@/apis/endpoints/auth";
 import { useAuth } from "@/context/AuthContext";
+import { AppLogo } from "@/assets/AppLogo";
+import { LoginBackground } from "@/assets/LoginBackground";
 
 // Configure Google Sign-In
 GoogleSignin.configure({
@@ -71,71 +73,45 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        <CText style={styles.title} bold>
-          Welcome to Languine
-        </CText>
-        <CText style={styles.subtitle}>
-          Sign in to access your language learning decks
-        </CText>
-
-        {isLoading ? (
-          <ActivityIndicator
-            size="large"
-            color={COLORS.accent.primary}
-            style={styles.loader}
-          />
-        ) : (
-          <CButton
-            onPress={handleGoogleSignIn}
-            variant="primary"
-            label="Sign in with Google"
-          />
-        )}
+    <View
+      style={{
+        display: "flex",
+        backgroundColor: COLORS.accent.primary,
+        justifyContent: "center",
+        alignItems: "center",
+        padding: 20,
+        height: "100%",
+        rowGap: 100,
+      }}
+    >
+      <View
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          height: "100%",
+          width: "100%",
+        }}
+      >
+        <LoginBackground />
       </View>
+      <View style={{ width: 300, height: 100 }}>
+        <AppLogo />
+      </View>
+      {isLoading ? (
+        <ActivityIndicator
+          size="large"
+          color={COLORS.icon.fillPrimary}
+          style={{ marginTop: 20 }}
+        />
+      ) : (
+        <CButton
+          onPress={handleGoogleSignIn}
+          label="Sign in with Google"
+          variant="google"
+          // style={}
+        />
+      )}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.backgroundPrimary,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  content: {
-    width: "100%",
-    maxWidth: 400,
-    alignItems: "center",
-  },
-  title: {
-    fontSize: 32,
-    color: COLORS.text.primary,
-    marginBottom: 12,
-    textAlign: "center",
-  },
-  subtitle: {
-    fontSize: 16,
-    color: COLORS.text.secondary,
-    marginBottom: 40,
-    textAlign: "center",
-  },
-  googleButton: {
-    width: "100%",
-    backgroundColor: COLORS.accent.primary,
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  buttonText: {
-    color: COLORS.text.primary,
-    fontSize: 16,
-  },
-  loader: {
-    marginTop: 20,
-  },
-});

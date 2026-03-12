@@ -21,6 +21,7 @@ const lightTheme = {
   button: {
     fillPrimary: "#FFBA26",
     fillSecondary: "#FFFCF9",
+    outlinePrimary: "#8D481C",
   },
 } as const;
 
