@@ -44,9 +44,7 @@ const request = async (
       body,
     });
 
-    console.log("got response");
     const data = await response.json();
-    console.log("parsed response");
 
     // Handle HTTP error responses
     if (!response.ok) {
