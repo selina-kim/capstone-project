@@ -12,6 +12,7 @@ const lightTheme = {
     primary: "#5C2C0E",
     secondary: "#8D481C",
     tertiary: "#bc8b63",
+    error: "#D41605",
   },
   accent: {
     primary: "#FFBA26",

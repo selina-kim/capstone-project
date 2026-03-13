@@ -44,6 +44,11 @@ export const textVariants = StyleSheet.create({
     lineHeight: 24,
     ...fonts.bold,
   },
+  inputError: {
+    color: COLORS.text.error,
+    fontSize: 16,
+    lineHeight: 20,
+  },
   containerLabel: {
     color: COLORS.text.primary,
     fontSize: 18,
