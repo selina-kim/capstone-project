@@ -1,8 +1,8 @@
 import { createDeck } from "@/apis/endpoints/decks";
 import { CText } from "@/components/common/CText";
+import { CTextInput } from "@/components/common/CTextInput";
 import { Dropdown } from "@/components/common/Dropdown";
 import { Modal } from "@/components/common/Modal";
-import { TextInput } from "@/components/common/TextInput";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
 
@@ -87,7 +87,7 @@ export const CreateNewDeckModal = ({
       closeLabel="Cancel"
     >
       <View style={{ gap: 14, marginBottom: 16 }}>
-        <TextInput
+        <CTextInput
           label="Deck Name *"
           value={deckName}
           onChangeText={setDeckName}
@@ -111,7 +111,7 @@ export const CreateNewDeckModal = ({
           </CText>
         )}
         <View style={{ zIndex: -1 }}>
-          <TextInput
+          <CTextInput
             label="Description"
             value={description}
             onChangeText={setDescription}

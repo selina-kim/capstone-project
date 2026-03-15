@@ -31,6 +31,14 @@ const buttonVariants = StyleSheet.create({
     borderColor: COLORS.button.outlinePrimary,
     borderWidth: 2,
   },
+  deletePrimary: {
+    backgroundColor: COLORS.accent.delete,
+  },
+  deleteSecondary: {
+    backgroundColor: COLORS.backgroundPrimary,
+    borderColor: COLORS.accent.delete,
+    borderWidth: 2,
+  },
 });
 
 const buttonTextProps: { [buttonTextVariant: string]: CTextProps } = {
@@ -42,6 +50,14 @@ const buttonTextProps: { [buttonTextVariant: string]: CTextProps } = {
   },
   google: {
     variant: "google",
+  },
+  deletePrimary: {
+    bold: false,
+    style: { color: COLORS.text.white },
+  },
+  deleteSecondary: {
+    bold: false,
+    style: { color: COLORS.accent.delete },
   },
 };
 

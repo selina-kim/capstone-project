@@ -5,6 +5,7 @@ const lightTheme = {
   icon: {
     outlinePrimary: "#8D481C",
     outlineSecondary: "#FFBA26",
+    outlineTertiary: "#5C2C0E",
     fillPrimary: "#FFFCF9",
     fillSecondary: "#FFF5DB",
   },
@@ -13,6 +14,7 @@ const lightTheme = {
     secondary: "#8D481C",
     tertiary: "#bc8b63",
     error: "#D41605",
+    white: "#FFFCF9",
   },
   accent: {
     primary: "#FFBA26",

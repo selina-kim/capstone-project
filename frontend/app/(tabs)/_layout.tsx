@@ -81,6 +81,12 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <HelpIcon stroke={color} />,
         }}
       />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          href: null, // Hide from tab bar
+        }}
+      />
     </Tabs>
   );
 }
