@@ -2,29 +2,57 @@ import { COLORS } from "@/constants/colors";
 import {
   TextInput as RNTextInput,
   TextInputProps as RNTextInputProps,
+  StyleSheet,
   View,
 } from "react-native";
 import { CText, textVariants } from "./CText";
 
+const inputBaseStyle = StyleSheet.create({
+  base: {
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    outlineColor: COLORS.accent.primary,
+    ...textVariants.base,
+  },
+});
+
+const inputVariants = StyleSheet.create({
+  form: {
+    backgroundColor: COLORS.backgroundSecondary,
+  },
+  editModal: {
+    backgroundColor: COLORS.backgroundPrimary,
+    borderWidth: 2,
+    borderColor: COLORS.icon.outlineTertiary,
+    fontSize: 18,
+  },
+});
+
+type InputVariantType = keyof typeof inputVariants;
+
 interface TextInputProps extends RNTextInputProps {
-  label: string;
+  label?: string;
   value: string;
   onChangeText: (text: string) => void;
   placeholder?: string;
+  variant?: InputVariantType;
 }
 
-export const TextInput = ({
+export const CTextInput = ({
   label,
   value,
   onChangeText,
   placeholder,
+  variant = "form",
   multiline,
   numberOfLines,
+  style,
   ...props
 }: TextInputProps) => {
   return (
     <View>
-      <CText variant="inputLabel">{label}</CText>
+      {label && <CText variant="inputLabel">{label}</CText>}
       <RNTextInput
         value={value}
         onChangeText={onChangeText}
@@ -33,18 +61,13 @@ export const TextInput = ({
         multiline={multiline}
         numberOfLines={numberOfLines}
         style={[
-          {
-            backgroundColor: COLORS.backgroundSecondary,
-            borderRadius: 8,
-            paddingVertical: 8,
-            paddingHorizontal: 12,
-            outlineColor: COLORS.accent.primary,
-            ...textVariants.base,
-          },
+          inputBaseStyle.base,
+          inputVariants[variant],
           multiline && {
             minHeight: 80,
             textAlignVertical: "top",
           },
+          style,
         ]}
         {...props}
       />

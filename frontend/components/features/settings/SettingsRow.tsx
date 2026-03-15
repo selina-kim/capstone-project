@@ -1,7 +1,7 @@
-import { Pressable, View } from "react-native";
+import { EditIcon } from "@/assets/icons/EditIcon";
 import { CText } from "@/components/common/CText";
 import { COLORS } from "@/constants/colors";
-import { EditIcon } from "@/assets/icons/EditIcon";
+import { Pressable, View } from "react-native";
 
 interface SettingsRowProps {
   label: string;
@@ -31,7 +31,6 @@ export const SettingsRow = ({
         <CText bold>{label}</CText>
         <CText style={{ color: COLORS.text.secondary }}>{value}</CText>
       </View>
-
       <Pressable onPress={onPress} style={{ width: 25, alignItems: "center" }}>
         <EditIcon />
       </Pressable>

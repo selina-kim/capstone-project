@@ -1,7 +1,6 @@
+import { CTextInput } from "@/components/common/CTextInput";
 import { Modal } from "@/components/common/Modal";
-import { COLORS } from "@/constants/colors";
 import React from "react";
-import { TextInput } from "react-native";
 
 interface EditModalProps {
   visible: boolean;
@@ -36,19 +35,11 @@ export const EditModal: React.FC<EditModalProps> = ({
       submitLabel={submitLabel}
       closeLabel={closeLabel}
     >
-      <TextInput
+      <CTextInput
         value={value}
         onChangeText={onChange}
-        style={{
-          borderWidth: 2,
-          borderColor: COLORS.icon.outlineTertiary,
-          borderRadius: 8,
-          padding: 10,
-          marginTop: 10,
-          marginBottom: 20,
-          fontSize: 20,
-          color: COLORS.text.primary,
-        }}
+        variant="editModal"
+        style={{ marginTop: 10, marginBottom: 20 }}
       />
     </Modal>
   );
