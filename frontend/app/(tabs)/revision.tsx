@@ -1,3 +1,4 @@
+import { CText } from "@/components/common/CText";
 import { DeckPreviewCard } from "@/components/features/revision/DeckPreviewCard";
 import { ScrollView } from "react-native";
 
@@ -19,6 +20,7 @@ export default function Revision() {
         rowGap: 20,
       }}
     >
+      <CText variant="title">Select a deck to start your review session</CText>
       {decksList.map((deck) => (
         <DeckPreviewCard
           key={`deck_preview_card_${deck.title}`}
