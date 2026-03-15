@@ -1,11 +1,11 @@
 import { CSwitch } from "@/components/common/CSwitch";
 import { CText } from "@/components/common/CText";
 import { DeleteButton } from "@/components/common/DeleteButton";
-import { SettingsRow } from "@/components/features/settings/SettingsRow";
 import { COLORS } from "@/constants/colors";
 import { SHADOWS } from "@/constants/shadows";
 import React, { useState } from "react";
 import { View } from "react-native";
+import { SettingsRow } from "./SettingsRow";
 
 type OptimizationSettingsProps = {
   reviewsBeforeNextOptimization: number;
@@ -23,6 +23,7 @@ export function OptimizationSettings({
   return (
     <View
       style={{
+        display: "flex",
         marginTop: 20,
         width: "100%",
         borderWidth: 3,
@@ -34,6 +35,7 @@ export function OptimizationSettings({
     >
       <View
         style={{
+          display: "flex",
           paddingHorizontal: 25,
           paddingTop: 15,
           paddingBottom: 20,
@@ -50,9 +52,12 @@ export function OptimizationSettings({
           onChange={setAutoOptimizeEnabled}
         />
       </View>
-
       {autoOptimizeEnabled && (
-        <View style={{ paddingHorizontal: 25 }}>
+        <View
+          style={{
+            paddingHorizontal: 25,
+          }}
+        >
           <View
             style={{
               borderTopWidth: 2,

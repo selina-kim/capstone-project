@@ -1,9 +1,9 @@
-import React from "react";
-import { Pressable, View } from "react-native";
+import { EditIcon } from "@/assets/icons/EditIcon";
 import { CText } from "@/components/common/CText";
 import { COLORS } from "@/constants/colors";
-import { EditIcon } from "@/assets/icons/EditIcon";
 import { SHADOWS } from "@/constants/shadows";
+import React from "react";
+import { Pressable, View } from "react-native";
 
 type SettingKey = "timeZone" | "newCardsPerDay" | "retrievability";
 
@@ -66,7 +66,7 @@ export const UserSettings = ({ values, onEdit }: UserSettingsProps) => {
             {setting.key !== "timeZone" && (
               <Pressable
                 onPress={() => onEdit(setting.key)}
-                style={{ width: 25, alignItems: "center" }}
+                style={{ width: 25, height: 25, alignItems: "center" }}
               >
                 <EditIcon />
               </Pressable>

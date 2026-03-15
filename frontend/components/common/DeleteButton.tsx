@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { View } from "react-native";
+import { PressableProps, View } from "react-native";
 import { CButton } from "./CButton";
 import { Modal } from "./Modal";
 
-interface DeleteButtonProps {
+interface DeleteButtonProps extends PressableProps {
   label?: string;
   onConfirm: () => void;
   deleteVariant?: "deletePrimary" | "deleteSecondary";
@@ -19,6 +19,7 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({
   confirmDescription = "This action cannot be undone",
   submitLabel = "Delete",
   deleteVariant = "deletePrimary",
+  style,
 }) => {
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -33,8 +34,8 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({
         variant={deleteVariant}
         label={label}
         onPress={() => setModalVisible(true)}
+        style={style}
       />
-
       <Modal
         visible={modalVisible}
         header={confirmMessage}

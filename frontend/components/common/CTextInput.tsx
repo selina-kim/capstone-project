@@ -5,7 +5,7 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import { CText, textVariants } from "./CText";
+import { CText, fonts, textVariants } from "./CText";
 
 const inputBaseStyle = StyleSheet.create({
   base: {
@@ -13,6 +13,7 @@ const inputBaseStyle = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
     outlineColor: COLORS.accent.primary,
+    ...fonts.base,
     ...textVariants.base,
   },
 });

@@ -1,4 +1,4 @@
-import { DeleteButton } from "@/components/common/DeleteButton";
+import DeleteButton from "@/components/common/DeleteButton";
 import { EditModal } from "@/components/common/EditModal";
 import { DisplayNameSettings } from "@/components/features/settings/DisplayNameSetting";
 import { OptimizationSettings } from "@/components/features/settings/OptimizationSettings";
@@ -78,15 +78,12 @@ export default function Settings() {
         paddingTop: 30,
         paddingHorizontal: 30,
       }}
-      style={{ flex: 1 }}
+      style={{ display: "flex" }}
     >
-      {/* Block 1 */}
       <DisplayNameSettings
         displayName={settingsState.displayName}
         onEdit={() => openModal("displayName")}
       />
-
-      {/* Block 2 */}
       <UserSettings
         values={{
           timeZone: settingsState.timeZone,
@@ -95,8 +92,6 @@ export default function Settings() {
         }}
         onEdit={(key) => openModal(key)}
       />
-
-      {/* Block 3 */}
       <OptimizationSettings
         reviewsBeforeNextOptimization={
           settingsState.reviewsBeforeNextOptimization
@@ -104,8 +99,11 @@ export default function Settings() {
         onEdit={() => openModal("reviewsBeforeNextOptimization")}
         onResetParameters={() => {}} // TODO
       />
-
-      <View style={{ marginTop: 60 }}>
+      <View
+        style={{
+          marginTop: 60,
+        }}
+      >
         <DeleteButton
           label="Delete Account"
           onConfirm={() => {
@@ -115,8 +113,6 @@ export default function Settings() {
           confirmDescription="This action will permanently delete your account and all associated data"
         />
       </View>
-
-      {/* Modal */}
       <EditModal
         visible={modalVisible}
         header={modalKey ? SETTING_LABELS[modalKey].label : ""}

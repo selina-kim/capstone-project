@@ -22,6 +22,7 @@ export const SettingsRow = ({
         borderBottomWidth: isLast ? 0 : 1,
         borderBottomColor: COLORS.icon.outlinePrimary,
         paddingVertical: 16,
+        display: "flex",
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
@@ -31,7 +32,10 @@ export const SettingsRow = ({
         <CText bold>{label}</CText>
         <CText style={{ color: COLORS.text.secondary }}>{value}</CText>
       </View>
-      <Pressable onPress={onPress} style={{ width: 25, alignItems: "center" }}>
+      <Pressable
+        onPress={onPress}
+        style={{ width: 25, height: 25, alignItems: "center" }}
+      >
         <EditIcon />
       </Pressable>
     </View>
