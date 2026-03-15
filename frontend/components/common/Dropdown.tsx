@@ -45,6 +45,8 @@ export const Dropdown = ({
         <View
           style={{
             opacity: 0.5,
+            width: 16,
+            height: 16,
             transform: [{ rotate: isOpen ? "180deg" : "0deg" }],
           }}
         >
