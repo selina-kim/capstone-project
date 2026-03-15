@@ -30,7 +30,7 @@ export const Dropdown = ({
       <Pressable
         onPress={() => setIsOpen(!isOpen)}
         style={{
-          backgroundColor: COLORS.backgroundSecondary,
+          backgroundColor: COLORS.background.secondary,
           borderRadius: 8,
           paddingVertical: 8,
           paddingHorizontal: 12,
@@ -60,7 +60,7 @@ export const Dropdown = ({
             left: 0,
             right: 0,
             marginTop: 4,
-            backgroundColor: COLORS.backgroundSecondary,
+            backgroundColor: COLORS.background.secondary,
             borderRadius: 8,
             maxHeight: 140,
             ...SHADOWS.default,
@@ -76,8 +76,8 @@ export const Dropdown = ({
                 paddingHorizontal: 12,
                 backgroundColor:
                   value === option
-                    ? COLORS.backgroundTertiary
-                    : COLORS.backgroundSecondary,
+                    ? COLORS.background.tertiary
+                    : COLORS.background.secondary,
               }}
             >
               <CText

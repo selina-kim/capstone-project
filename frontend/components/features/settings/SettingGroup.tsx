@@ -132,7 +132,7 @@ export const SettingGroup: SettingGroupComponent = ({ children }) => {
         borderWidth: 3,
         borderColor: COLORS.icon.outlineSecondary,
         borderRadius: 16,
-        backgroundColor: COLORS.backgroundPrimary,
+        backgroundColor: COLORS.background.primary,
         paddingHorizontal: 25,
         ...SHADOWS.default,
       }}

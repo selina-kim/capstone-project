@@ -33,6 +33,9 @@ export const fonts = StyleSheet.create({
   bold: {
     fontFamily: "Arimo_700Bold",
   },
+  special: {
+    fontFamily: "Commissioner_700Bold",
+  },
 });
 
 export const textVariants = StyleSheet.create({
@@ -63,6 +66,24 @@ export const textVariants = StyleSheet.create({
   google: {
     color: COLORS.text.primary,
     fontSize: 20,
+    lineHeight: 24,
+    ...fonts.bold,
+  },
+  deckPreviewTitle: {
+    color: COLORS.text.primary,
+    fontSize: 22,
+    lineHeight: 28,
+    ...fonts.bold,
+  },
+  deckPreviewLanguage: {
+    color: COLORS.text.language,
+    fontSize: 16,
+    lineHeight: 24,
+    ...fonts.special,
+  },
+  deckPreviewContent: {
+    color: COLORS.text.secondary,
+    fontSize: 18,
     lineHeight: 24,
     ...fonts.bold,
   },

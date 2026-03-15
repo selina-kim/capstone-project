@@ -11,7 +11,7 @@ const buttonBaseStyle = StyleSheet.create({
     borderRadius: 8,
     display: "flex",
     flexDirection: "row",
-    columnGap: 5,
+    columnGap: 8,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -22,7 +22,7 @@ const buttonVariants = StyleSheet.create({
     backgroundColor: COLORS.accent.primary,
   },
   secondary: {
-    backgroundColor: COLORS.backgroundPrimary,
+    backgroundColor: COLORS.background.primary,
     borderColor: COLORS.text.primary,
     borderWidth: 2,
   },
@@ -36,7 +36,7 @@ const buttonVariants = StyleSheet.create({
     backgroundColor: COLORS.accent.delete,
   },
   criticalSecondary: {
-    backgroundColor: COLORS.backgroundPrimary,
+    backgroundColor: COLORS.background.primary,
     borderColor: COLORS.accent.delete,
     borderWidth: 2,
   },
@@ -110,7 +110,7 @@ export const CButton: React.FC<CButtonProps> = ({
         onPress={onConfirm ? handleInitialPress : onPress}
         {...props}
       >
-        {Icon && <View style={{ minWidth: "auto" }}>{Icon}</View>}
+        {Icon && <View style={{ width: 16, height: 16 }}>{Icon}</View>}
         <CText
           style={{
             textAlign: "center",

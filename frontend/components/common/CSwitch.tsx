@@ -15,7 +15,7 @@ export function CSwitch({
   value,
   onChange,
   activeColor = COLORS.button.fillPrimary,
-  inactiveColor = COLORS.backgroundTertiary,
+  inactiveColor = COLORS.background.tertiary,
   thumbColor = "#ffffff",
   disabled = false,
 }: MySwitchProps) {

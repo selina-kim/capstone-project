@@ -1,6 +1,7 @@
 import { COLORS } from "@/constants/colors";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { Arimo_400Regular, Arimo_700Bold } from "@expo-google-fonts/arimo";
+import { Commissioner_700Bold } from "@expo-google-fonts/commissioner";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
@@ -16,7 +17,7 @@ function RootLayoutNav() {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: COLORS.backgroundPrimary,
+          backgroundColor: COLORS.background.primary,
         }}
       >
         <ActivityIndicator size="large" color={COLORS.accent.primary} />
@@ -36,6 +37,7 @@ export default function RootLayout() {
   useFonts({
     Arimo_400Regular,
     Arimo_700Bold,
+    Commissioner_700Bold,
   });
 
   return (

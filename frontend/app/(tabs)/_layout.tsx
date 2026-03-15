@@ -66,7 +66,7 @@ export default function TabLayout() {
         <View
           style={{
             top: 120,
-            backgroundColor: COLORS.backgroundPrimary,
+            backgroundColor: COLORS.background.primary,
             ...SHADOWS.default,
             borderBottomWidth: 8,
             borderBottomColor: COLORS.accent.primary,
@@ -126,7 +126,7 @@ export default function TabLayout() {
           tabBarLabelPosition: "beside-icon",
           tabBarStyle: { borderTopWidth: 0 },
           sceneStyle: {
-            backgroundColor: COLORS.backgroundPrimary,
+            backgroundColor: COLORS.background.primary,
           },
         }}
       >

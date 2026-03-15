@@ -43,7 +43,8 @@
         {
           "fonts": [
             "node_modules/@expo-google-fonts/arimo/400Regular/Arimo_400Regular.ttf",
-            "node_modules/@expo-google-fonts/arimo/700Bold/Arimo_700Bold.ttf"
+            "node_modules/@expo-google-fonts/arimo/700Bold/Arimo_700Bold.ttf",
+            "node_modules/@expo-google-fonts/commissioner/700Bold/Commissioner_700Bold.ttf"
           ]
         }
       ],

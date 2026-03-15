@@ -60,7 +60,7 @@ export const Modal = ({
       >
         <View
           style={{
-            backgroundColor: COLORS.backgroundPrimary,
+            backgroundColor: COLORS.background.primary,
             borderRadius: 12,
             padding: 20,
             width: "80%",
