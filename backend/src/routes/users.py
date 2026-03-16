@@ -10,12 +10,14 @@ from services.user_service import (
     DatabaseError
 )
 from services.fsrs_service import FsrsService
+from services.fsrs.optimizer import mini_batch_size
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 users_bp = Blueprint("users", __name__)
 user_service = UserService()
 fsrs_service = FsrsService()
 
+MIN_OPTIMIZATION_CARDS_THRESHOLD = mini_batch_size
 
 def json_response(data, status=200, ensure_ascii=False):
     """Create a JSON response with proper encoding."""
@@ -169,6 +171,18 @@ def update_current_user():
     
     try:
         updated_user = user_service.update_user(user_id, data)
+        
+        if 'auto_optimize' in data and fsrs_service.should_optimize(user_id):
+            # check that they have reviewed enough cards since the last optimization
+            # and that their total reviewed cards meets the min threshold for optimization mini_batch_size
+            if fsrs_service.cards_reviewed_since_last_optimize(user_id) >= fsrs_service.num_reviews_per_optimize(user_id) and fsrs_service.total_cards_reviewed(user_id) >= MIN_OPTIMIZATION_CARDS_THRESHOLD:
+                new_params = fsrs_service.optimize_parameters(user_id)
+                fsrs_service.save_parameters(user_id, new_params)
+                fsrs_service.reset_review_counts(user_id)  
+
+        # Retrieve the fresh user object to ensure we return the latest state 
+        # (including any side effects like optimized parameters)
+        updated_user = user_service.get_user(user_id)
         
         return json_response({
             "message": "User profile updated successfully",
