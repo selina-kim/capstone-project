@@ -198,17 +198,6 @@ def test_tts_get_speakers(client):
     assert isinstance(data["speakers"], list)
 
 
-def test_tts_get_models(client):
-    """Test getting real list of available models."""
-    response = client.get("/tts/models")
-    
-    assert response.status_code == 200
-    data = json.loads(response.data)
-    assert "models" in data
-    assert len(data["models"]) > 0
-    assert isinstance(data["models"], list)
-
-
 def test_tts_multiple_requests(client):
     """Test multiple sequential TTS requests."""
     texts = [

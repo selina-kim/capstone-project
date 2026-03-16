@@ -18,10 +18,8 @@ Run this test file:
 Run with coverage:
     docker compose exec backend pytest src/tests/test_tts_unit.py --cov=services.tts_service
 """
-import pytest
 import json
 import numpy as np
-from io import BytesIO
 
 
 def test_tts_post_success_with_speaker(client, monkeypatch):
@@ -176,7 +174,7 @@ def test_tts_post_service_exception(client, monkeypatch):
     """Test error handling when TTS service raises exception."""
 
     class MockTTSService:
-        def generate_speech(self, text, language, model_name=None, speaker=None, speaker_wav=None):
+        def generate_speech(self, text, language, speaker=None, speaker_wav=None):
             raise Exception("TTS service failed")
 
     monkeypatch.setattr("routes.tts.tts_service", MockTTSService())
@@ -235,43 +233,12 @@ def test_tts_get_languages_success(client):
     assert data["languages"]["en"] == "English"
 
 
-def test_tts_get_models_success(client, monkeypatch):
-    """Test successful retrieval of available models."""
-    class MockTTSService:
-        def list_available_models(self):
-            return ["model1", "model2", "model3"]
-    
-    monkeypatch.setattr("routes.tts.tts_service", MockTTSService())
-    
-    response = client.get("/tts/models")
-    
-    assert response.status_code == 200
-    data = json.loads(response.data)
-    assert "models" in data
-    assert len(data["models"]) == 3
-
-
-def test_tts_get_models_exception(client, monkeypatch):
-    """Test error handling when model retrieval fails."""
-    class MockTTSService:
-        def list_available_models(self):
-            raise Exception("Failed to list models")
-    
-    monkeypatch.setattr("routes.tts.tts_service", MockTTSService())
-    
-    response = client.get("/tts/models")
-    
-    assert response.status_code == 500
-    data = json.loads(response.data)
-    assert "error" in data
-
-
 def test_tts_default_speaker_fallback(client, monkeypatch):
     """Test fallback to default speaker when language has no default."""
     mock_audio = np.array([0.1, 0.2], dtype=np.float32)
 
     class MockTTSService:
-        def generate_speech(self, text, language, model_name=None, speaker=None, speaker_wav=None):
+        def generate_speech(self, text, language, speaker=None, speaker_wav=None):
             # Should use fallback speaker
             assert speaker == "Claribel Dervla"
             return mock_audio

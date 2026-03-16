@@ -188,26 +188,3 @@ def get_languages():
         mimetype="application/json; charset=utf-8"
     )
 
-
-@tts_bp.route("/tts/models", methods=["GET"])
-def get_models():
-    """
-    Get list of available TTS models.
-    
-    Returns: JSON array of available models
-    """
-    try:
-        models = tts_service.list_available_models()
-        
-        return Response(
-            json.dumps({"models": models}, ensure_ascii=False),
-            status=200,
-            mimetype="application/json; charset=utf-8"
-        )
-    except Exception as e:
-        return Response(
-            json.dumps({"error": f"Error retrieving models: {str(e)}"}, ensure_ascii=False),
-            status=500,
-            mimetype="application/json; charset=utf-8"
-        )
-
