@@ -19,11 +19,20 @@ Test coverage:
 """
 import pytest
 import os
+import json
+import base64
 
 # Mark all tests in this file as integration tests
 pytestmark = pytest.mark.integration
 
 REAL_TOKEN = os.getenv("GOOGLE_TEST_ID_TOKEN")
+
+def _decode_google_token_payload(id_token):
+    """Decode the payload of a Google ID token (JWT) without verification."""
+    payload_b64 = id_token.split(".")[1]
+    # JWT uses base64url encoding without padding — add padding back
+    payload_b64 += "=" * (4 - len(payload_b64) % 4)
+    return json.loads(base64.urlsafe_b64decode(payload_b64))
 
 # fixtures to skip tests if env vars are missing
 @pytest.fixture
@@ -49,13 +58,29 @@ class TestGoogleOAuthIntegration:
             "/auth/google",
             json={"id_token": REAL_TOKEN}
         )
-        
+
         assert response.status_code == 200
         data = response.get_json()
-        
+
         assert "access_token" in data["tokens"]
         assert "refresh_token" in data["tokens"]
         assert data["user"]["email"] is not None
+
+    def test_google_oauth_email_and_name_from_token(self, client, skip_if_no_google_config, skip_if_no_google_token):
+        """Test that returned email and display_name match the Google ID token claims."""
+        google_claims = _decode_google_token_payload(REAL_TOKEN)
+        expected_email = google_claims["email"]
+        expected_name = google_claims["name"]
+
+        response = client.post(
+            "/auth/google",
+            json={"id_token": REAL_TOKEN}
+        )
+
+        assert response.status_code == 200
+        user = response.get_json()["user"]
+        assert user["email"] == expected_email
+        assert user["display_name"] == expected_name
     
     def test_google_oauth_returns_valid_jwt(self, client, skip_if_no_google_config, skip_if_no_google_token):
         """Test that Google OAuth returns valid JWT tokens."""
@@ -162,6 +187,7 @@ class TestUserCreationIntegration:
         profile_data = profile_response.get_json()
         assert profile_data["u_id"] == user["u_id"]
         assert profile_data["email"] == user["email"]
+        assert profile_data["display_name"] == user["display_name"]
     
     def test_oauth_returns_existing_user(self, client, skip_if_no_google_config, skip_if_no_google_token):
         """Test that subsequent OAuth logins return existing user."""
