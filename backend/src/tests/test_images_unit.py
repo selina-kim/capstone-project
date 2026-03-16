@@ -34,7 +34,7 @@ def mock_unsplash_response():
                 },
                 "width": 4000,
                 "height": 3000,
-                "color": "#2C3E50",
+                "colour": "#2C3E50",
                 "blur_hash": "LKO2?U%2Tw=w]~RBVZRi};RPxuwH",
                 "user": {
                     "name": "John Doe",
@@ -125,14 +125,14 @@ class TestSearchPhotos:
         result = service.search_photos(
             query="sunset",
             orientation="landscape",
-            color="orange",
+            colour="orange",
             order_by="latest"
         )
         
         # Verify filters are passed
         call_args = mock_get.call_args[1]["params"]
         assert call_args["orientation"] == "landscape"
-        assert call_args["color"] == "orange"
+        assert call_args["colour"] == "orange"
         assert call_args["order_by"] == "latest"
         assert mock_get.call_args[1]["timeout"] == 10.0
     
@@ -215,7 +215,7 @@ class TestFormatPhotoResponse:
             },
             "width": 4000,
             "height": 3000,
-            "color": "#FF5733",
+            "colour": "#FF5733",
             "blur_hash": "LEHV6nWB2yk8pyo0adR*.7kCMdnj",
             "user": {
                 "name": "Test User",
@@ -241,7 +241,7 @@ class TestFormatPhotoResponse:
         assert result["urls"]["regular"] == "https://regular.url"
         assert result["width"] == 4000
         assert result["height"] == 3000
-        assert result["color"] == "#FF5733"
+        assert result["colour"] == "#FF5733"
         assert result["blur_hash"] == "LEHV6nWB2yk8pyo0adR*.7kCMdnj"
         assert result["user"]["name"] == "Test User"
         assert result["user"]["username"] == "testuser"

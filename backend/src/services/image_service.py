@@ -32,7 +32,7 @@ class UnsplashService:
         per_page: int = 5,
         order_by: str = "relevant",
         orientation: Optional[str] = None,
-        color: Optional[str] = None,
+        colour: Optional[str] = None,
         content_filter: str = "high"
     ) -> Dict[str, Any]:
         """
@@ -44,7 +44,7 @@ class UnsplashService:
             per_page: Number of items per page (default: 5, max: 30)
             order_by: How to sort photos (relevant or latest)
             orientation: Filter by orientation (landscape, portrait, squarish)
-            color: Filter by color (e.g., black_and_white, black, white, yellow, etc.)
+            colour: Filter by colour (e.g., black_and_white, black, white, yellow, etc.)
             content_filter: Content safety filter (low or high)
         
         Returns:
@@ -62,8 +62,8 @@ class UnsplashService:
         
         if orientation:
             params["orientation"] = orientation
-        if color:
-            params["color"] = color
+        if colour:
+            params["colour"] = colour
         
         try:
             response = requests.get(
@@ -123,7 +123,7 @@ class UnsplashService:
             },
             "width": photo.get("width"),
             "height": photo.get("height"),
-            "color": photo.get("color"),
+            "colour": photo.get("colour"),
             "blur_hash": photo.get("blur_hash"),
             "user": {
                 "name": photo.get("user", {}).get("name"),
