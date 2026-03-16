@@ -99,12 +99,12 @@ def text_to_speech():
                 status=400,
                 mimetype="application/json; charset=utf-8"
             )
-        
-        # Use default speaker for language if not provided
+
+        # Use language default speaker when caller doesn't provide one.
         if not speaker:
             speaker = DEFAULT_SPEAKERS.get(language)
-            if not speaker:
-                # Fallback to first available speaker if language not in defaults
+            # Fallback: if language is supported but has no default, use a global fallback
+            if language in SUPPORTED_LANGUAGES and not speaker:
                 speaker = "Claribel Dervla"
         
         # Validate language

@@ -321,5 +321,4 @@ def test_tts_mixed_language_text(client):
         }
     )
     
-    # Should handle or reject gracefully
-    assert response.status_code in [200, 400, 500]
+    assert response.status_code in [200, 400]
