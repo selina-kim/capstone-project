@@ -20,7 +20,6 @@ Run with coverage:
 
 import pytest
 import json
-from conftest import MOCK_OPTIMIZED_PARAMS
 from services.fsrs.optimizer import DEFAULT_PARAMETERS
 
 pytestmark = pytest.mark.integration

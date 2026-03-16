@@ -19,8 +19,6 @@ Run all integration tests with:
 Unless otherwise specified.
 """
 
-MOCK_OPTIMIZED_PARAMS = (0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5)
-
 def cleanup_minio_test_data():
     """Clean up all test files from MinIO bucket."""
     try:
