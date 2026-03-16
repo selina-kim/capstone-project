@@ -42,7 +42,7 @@ def google_oauth():
         user = AuthService.get_or_create_oauth_user(
             google_id=idinfo['sub'],
             email=idinfo['email'],
-            display_name=idinfo.get('email').split('@')[0],
+            display_name=idinfo['name'], # first + last 
             timezone='UTC'
         )
         
