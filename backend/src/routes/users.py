@@ -179,6 +179,8 @@ def update_current_user():
                 new_params = fsrs_service.optimize_parameters(user_id)
                 fsrs_service.save_parameters(user_id, new_params)
                 fsrs_service.reset_review_counts(user_id)  
+                # reschedule all cards based on the new parameters
+                fsrs_service.reschedule_all_cards(user_id)
 
         # Retrieve the fresh user object to ensure we return the latest state 
         # (including any side effects like optimized parameters)
