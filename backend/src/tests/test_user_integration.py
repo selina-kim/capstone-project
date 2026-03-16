@@ -21,6 +21,7 @@ Run with coverage:
 import pytest
 import json
 from conftest import MOCK_OPTIMIZED_PARAMS
+from services.fsrs.optimizer import DEFAULT_PARAMETERS
 
 pytestmark = pytest.mark.integration
 
@@ -40,7 +41,7 @@ def test_get_current_user_success(client, auth_headers):
     assert result["email"] == "test@example.com"
     assert result["display_name"] == "Test User"
     assert result["timezone"] == "America/Toronto"
-    assert result["fsrs_parameters"] == list(MOCK_OPTIMIZED_PARAMS)
+    assert result["fsrs_parameters"] == list(DEFAULT_PARAMETERS)
     assert "new_cards_per_day" in result
     assert "desired_retention" in result
 
@@ -155,6 +156,30 @@ def test_update_auto_optimize(client, auth_headers):
     assert response.status_code == 200
     result = json.loads(response.data)
     assert result["user"]["auto_optimize"] is False
+
+def test_update_auto_optimize_true(client, auth_headers):
+    """Test updating auto-optimize flag."""
+    update_data = {
+        "auto_optimize": True
+    }
+    
+    response = client.patch(
+        "/users/me",
+        data=json.dumps(update_data),
+        content_type='application/json',
+        headers=auth_headers
+    )
+    
+    print(response.status_code)
+    print(response.get_data(as_text=True))
+
+    assert response.status_code == 200
+    result = json.loads(response.data)
+    assert result["user"]["auto_optimize"] is True
+    # should run the optimization immediately since the user has already reviewed enough cards in the test setup, 
+    # so parameters should be updated from the default and reviews_since_last_optimize should be reset to 0
+    assert result["user"]["fsrs_parameters"] != list(DEFAULT_PARAMETERS)  
+    assert result["user"]["reviews_since_last_optimize"] == 0
 
 
 def test_update_fsrs_parameters(client, auth_headers):
@@ -372,6 +397,8 @@ def test_reset_fsrs_params_true(client, auth_headers):
     assert response.status_code == 200
     result = json.loads(response.data)
     assert result["user"]["display_name"] == "Reset Test User"
+    # When we set up the test user, we set fsrs_parameters to the default parameters
+    # so resetting this should set it to None in the DB (which the scheduler will interpret as default params anayways)
     assert result["user"]["fsrs_parameters"] is None
     # reset_fsrs_params is a control flag and must not appear in the returned user object
     assert 'reset_fsrs_params' not in result["user"]
