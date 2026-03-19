@@ -1,7 +1,7 @@
 import { CText } from "@/components/common/CText";
 import { COLORS } from "@/constants/colors";
 import { SHADOWS } from "@/constants/shadows";
-import { View } from "react-native";
+import { Pressable } from "react-native";
 
 type LastReviewedDeckItemProps = {
   deckName: string;
@@ -13,7 +13,11 @@ export const LastReviewedDeckItem = ({
   lastReviewed,
 }: LastReviewedDeckItemProps) => {
   return (
-    <View
+    <Pressable
+      onPress={() => {
+        // TODO
+        console.log(`${deckName} deck was clicked!`);
+      }}
       style={{
         paddingVertical: 10,
         paddingHorizontal: 25,
@@ -34,6 +38,6 @@ export const LastReviewedDeckItem = ({
       >
         Last reviewed: {lastReviewed}
       </CText>
-    </View>
+    </Pressable>
   );
 };

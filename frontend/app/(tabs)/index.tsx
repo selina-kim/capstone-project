@@ -8,21 +8,8 @@ import { ScrollView, View } from "react-native";
 const sampleDecksList = [
   { name: "Korean Vocab", lastReviewed: new Date("2026-02-27") },
   { name: "French Vocab", lastReviewed: new Date("2026-02-22") },
-  { name: "Japanese Vocab", lastReviewed: new Date("2026-02-24") },
   {
     name: "Really long title long long long long",
-    lastReviewed: new Date("2026-02-24"),
-  },
-  {
-    name: "Title 1",
-    lastReviewed: new Date("2026-02-24"),
-  },
-  {
-    name: "Title 2",
-    lastReviewed: new Date("2026-02-24"),
-  },
-  {
-    name: "Title 3",
     lastReviewed: new Date("2026-02-24"),
   },
 ];
