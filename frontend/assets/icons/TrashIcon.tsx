@@ -5,7 +5,7 @@ import { Path, Svg } from "react-native-svg";
 export const TrashIcon: React.FC<{ stroke?: string }> = ({
   stroke = COLORS.accent.delete,
 }) => (
-  <Svg width="21" height="20" viewBox="0 0 21 20" fill="none">
+  <Svg width="100%" height="100%" viewBox="0 0 21 20" fill="none">
     <Path
       d="M8.75 9.1665V14.1665"
       stroke={stroke}

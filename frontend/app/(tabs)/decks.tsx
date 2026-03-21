@@ -13,7 +13,7 @@ import { usePathname } from "expo-router";
 
 export default function Decks() {
   const [decks, setDecks] = useState<Deck[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCreateDeckModalOpen, setIsCreateDeckModalOpen] = useState(false);
   const [focusedDeckId, setFocusedDeckId] = useState<string>();
   const pathname = usePathname();
 
@@ -28,7 +28,7 @@ export default function Decks() {
   useEffect(() => {
     setFocusedDeckId(undefined);
     getAllDecks();
-  }, [isModalOpen, pathname]);
+  }, [isCreateDeckModalOpen, pathname]);
 
   const renderDecksView = () => (
     <>
@@ -54,7 +54,7 @@ export default function Decks() {
           >
             <NoDecksBanner
               onCreateNewDeck={() => {
-                setIsModalOpen(true);
+                setIsCreateDeckModalOpen(true);
               }}
             />
           </View>
@@ -86,13 +86,13 @@ export default function Decks() {
           borderRadius: 10,
           ...SHADOWS.smallButton,
         }}
-        onPress={() => setIsModalOpen(true)}
+        onPress={() => setIsCreateDeckModalOpen(true)}
       >
         <PlusFilledIcon />
       </Pressable>
       <CreateNewDeckModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isCreateDeckModalOpen}
+        onClose={() => setIsCreateDeckModalOpen(false)}
       />
     </>
   );

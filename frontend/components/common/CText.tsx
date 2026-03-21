@@ -48,10 +48,17 @@ export const textVariants = StyleSheet.create({
   base: { color: COLORS.text.primary, fontSize: 16, lineHeight: 24 },
   inputLabel: {
     color: COLORS.text.primary,
-    marginBottom: 8,
+    marginBottom: 4,
     fontSize: 16,
     lineHeight: 24,
     ...fonts.bold,
+  },
+  inputSubLabel: {
+    color: COLORS.text.language,
+    marginBottom: 4,
+    fontSize: 12,
+    lineHeight: 16,
+    ...fonts.special,
   },
   inputError: {
     color: COLORS.text.error,

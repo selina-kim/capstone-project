@@ -70,8 +70,8 @@ export const DeckPreview = ({
       <CButton onPress={onViewDeck} variant="primary" label="View Deck" />
       <Pressable
         style={{
-          width: 16,
-          height: 16,
+          width: 20,
+          height: 20,
           position: "absolute",
           top: 20,
           right: 20,
