@@ -1,7 +1,6 @@
 import { createCard } from "@/apis/endpoints/cards";
-import {
-  getTranslation,
-} from "@/apis/endpoints/translation";
+import { getWordDefinition } from "@/apis/endpoints/example";
+import { getTranslation } from "@/apis/endpoints/translation";
 import { MagicWandIcon } from "@/assets/icons/MagicWandIcon";
 import { CButton } from "@/components/common/CButton";
 import { CText } from "@/components/common/CText";
@@ -38,10 +37,13 @@ export const CreateNewCardModal = ({
   const [targetWord, setTargetWord] = useState("");
   const [sourceExample, setSourceExample] = useState("");
   const [targetExample, setTargetExample] = useState("");
-  const [wordInputError, setWordInputError] = useState<string>();
   const [isCreatingCard, setIsCreatingCard] = useState(false);
   const [isTranslatingWord, setIsTranslatingWord] = useState(false);
+  const [isGeneratingExample, setIsGeneratingExample] = useState(false);
   const { languageNameByCode } = useLanguageOptions();
+
+  const [wordInputError, setWordInputError] = useState<string>();
+  const [exampleError, setExampleError] = useState<string>();
 
   const getLanguageName = (code: string) =>
     languageNameByCode[code.toUpperCase()] ?? code.toUpperCase();
@@ -150,14 +152,66 @@ export const CreateNewCardModal = ({
     }
   };
 
-  // TODO: replace with actual example generation api logic
-  const handleAutoGenerateExample = () => {
-    console.log("auto-generate example translation");
-    if (sourceWord.trim() === "") {
-      setWordInputError("The word(s) cannot be empty");
+  const handleAutoGenerateExample = async () => {
+    if (isGeneratingExample) {
       return;
     }
-    setTargetExample("테스트");
+
+    setExampleError(undefined);
+
+    if (sourceWord.trim() === "") {
+      setExampleError("The word(s) cannot be empty");
+      return;
+    }
+
+    setIsGeneratingExample(true);
+
+    try {
+      let nextSourceExample = sourceExample.trim();
+
+      // If source example is empty, fetch one from dictionary.
+      if (!nextSourceExample) {
+        const { data: dictData, error: dictError } = await getWordDefinition(
+          sourceWord.trim(),
+        );
+
+        if (dictError) {
+          setExampleError(dictError);
+          return;
+        }
+
+        const firstExample =
+          dictData.definitions
+            ?.flatMap((definition) => definition.example_sentences ?? [])
+            .find((sentence) => sentence?.trim()) ?? "";
+
+        if (!firstExample) {
+          setExampleError("No example sentence found for this word");
+          return;
+        }
+
+        nextSourceExample = firstExample.trim();
+        setSourceExample(nextSourceExample);
+      }
+
+      const sourceCode = translationLanguageCode.toUpperCase();
+      const targetCode = wordLanguageCode.toUpperCase();
+
+      const { data, error } = await getTranslation(
+        nextSourceExample,
+        targetCode,
+        sourceCode,
+      );
+
+      if (error) {
+        setExampleError(error);
+        return;
+      }
+
+      setTargetExample(data.translatedText ?? "");
+    } finally {
+      setIsGeneratingExample(false);
+    }
   };
 
   // TODO: replace with actual image generation api logic
@@ -178,6 +232,7 @@ export const CreateNewCardModal = ({
       setWordInputError(undefined);
       setIsCreatingCard(false);
       setIsTranslatingWord(false);
+      setIsGeneratingExample(false);
     }
   }, [isOpen]);
 
@@ -230,11 +285,15 @@ export const CreateNewCardModal = ({
             onChangeText={setTargetExample}
             placeholder="e.g., 안녕하세요! 제 이름은 티누예요."
           />
+          {exampleError && (
+            <CText variant="inputError">{exampleError}</CText>
+          )}
           <CButton
             variant="primary"
-            label="Auto-generate"
+            label={isGeneratingExample ? "Generating..." : "Auto-generate"}
             Icon={<MagicWandIcon />}
-            onPress={handleAutoGenerateExample} // TODO
+            disabled={isGeneratingExample}
+            onPress={handleAutoGenerateExample}
           />
           <CText bold>Image</CText>
           <View

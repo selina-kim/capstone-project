@@ -23,8 +23,9 @@ export default function Decks() {
     const { data, error } = await getDecks();
 
     setDecks(data.decks);
-
-    console.log("error", error);
+    if (error) {
+      console.log(error);
+    }
   };
 
   const getLanguageName = (code: string) =>
