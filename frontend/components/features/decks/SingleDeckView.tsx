@@ -93,7 +93,15 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
         {cards.length === 0 ? (
           renderNoCardsBanner()
         ) : (
-          <CardsList cards={cards} />
+          <CardsList
+            deckId={deckId}
+            cards={cards}
+            onCardDeleted={(cardId) =>
+              setCards((prevCards) =>
+                prevCards.filter((card) => card.c_id !== cardId),
+              )
+            }
+          />
         )}
       </ScrollView>
       {cards.length !== 0 && (

@@ -1,12 +1,45 @@
 import { EditIcon } from "@/assets/icons/EditIcon";
 import { TrashIcon } from "@/assets/icons/TrashIcon";
+import { deleteCard } from "@/apis/endpoints/cards";
 import { CText } from "@/components/common/CText";
 import { COLORS } from "@/constants/colors";
 import { Card } from "@/types/decks";
+import { useState } from "react";
 import { Pressable, View } from "react-native";
 
-export const CardsList = ({ cards }: { cards: Card[] }) => {
-  const CardButtons = () => (
+interface CardsListProps {
+  deckId: string;
+  cards: Card[];
+  onCardDeleted: (cardId: number) => void;
+}
+
+export const CardsList = ({ deckId, cards, onCardDeleted }: CardsListProps) => {
+  const [deletingCardId, setDeletingCardId] = useState<number | null>(null);
+  const [deleteCardError, setDeleteCardError] = useState<string>();
+
+  const handleDeleteCard = async (cardId: number) => {
+    if (deletingCardId) {
+      return;
+    }
+
+    setDeleteCardError(undefined);
+    setDeletingCardId(cardId);
+
+    try {
+      const { error } = await deleteCard(deckId, cardId);
+
+      if (error) {
+        setDeleteCardError(error);
+        return;
+      }
+
+      onCardDeleted(cardId);
+    } finally {
+      setDeletingCardId(null);
+    }
+  };
+
+  const CardButtons = ({ cardId }: { cardId: number }) => (
     <View
       style={{
         position: "absolute",
@@ -31,8 +64,10 @@ export const CardsList = ({ cards }: { cards: Card[] }) => {
         style={{
           width: 20,
           height: 20,
+          opacity: deletingCardId === cardId ? 0.5 : 1,
         }}
-        onPress={() => console.log("delete clicked")} // TODO
+        disabled={deletingCardId !== null}
+        onPress={() => handleDeleteCard(cardId)}
       >
         <TrashIcon />
       </Pressable>
@@ -46,6 +81,7 @@ export const CardsList = ({ cards }: { cards: Card[] }) => {
         rowGap: 15,
       }}
     >
+      {deleteCardError && <CText variant="inputError">{deleteCardError}</CText>}
       {cards.map((card) => (
         <View
           key={`card_${card.c_id}`}
@@ -113,7 +149,7 @@ export const CardsList = ({ cards }: { cards: Card[] }) => {
               </CText>
             )}
           </View>
-          <CardButtons />
+          <CardButtons cardId={card.c_id} />
         </View>
       ))}
     </View>
