@@ -1,8 +1,7 @@
 import { COLORS } from "@/constants/colors";
-import { ReactNode, useState } from "react";
+import { ReactNode } from "react";
 import { Pressable, PressableProps, StyleSheet, View } from "react-native";
 import { CText, CTextProps } from "./CText";
-import { Modal } from "./Modal";
 
 const buttonBaseStyle = StyleSheet.create({
   base: {

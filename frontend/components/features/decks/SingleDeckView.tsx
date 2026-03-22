@@ -3,7 +3,6 @@ import { EditIcon } from "@/assets/icons/EditIcon";
 import { PlusIcon } from "@/assets/icons/PlusIcon";
 import { CButton } from "@/components/common/CButton";
 import { CText } from "@/components/common/CText";
-import { Modal } from "@/components/common/Modal";
 import { COLORS } from "@/constants/colors";
 import { SHADOWS } from "@/constants/shadows";
 import { Card, DeckDetails } from "@/types/decks";
