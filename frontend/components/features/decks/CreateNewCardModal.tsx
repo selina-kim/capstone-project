@@ -32,6 +32,7 @@ export const CreateNewCardModal = ({
   const [sourceExample, setSourceExample] = useState("");
   const [targetExample, setTargetExample] = useState("");
   const [wordInputError, setWordInputError] = useState<string>();
+  const [isCreatingCard, setIsCreatingCard] = useState(false);
 
   const getLanguageName = (code: string) =>
     languageNameByCode[code.toUpperCase()] ?? code.toUpperCase();
@@ -40,6 +41,12 @@ export const CreateNewCardModal = ({
   const targetLanguageName = getLanguageName(wordLanguageCode);
 
   const onCreateDeck = async () => {
+    if (isCreatingCard) {
+      return;
+    }
+
+    setWordInputError(undefined);
+
     const isEitherWordEmpty =
       sourceWord.trim() === "" || targetWord.trim() === "";
 
@@ -48,17 +55,30 @@ export const CreateNewCardModal = ({
       return;
     }
 
-    const { error } = await createCard(deckId, {
-      word: targetWord,
-      translation: sourceWord,
-      word_example: targetExample,
-      trans_example: sourceExample,
-    });
+    setIsCreatingCard(true);
 
-    if (!error) {
-      onClose();
-    } else {
-      console.log(error);
+    // const start = performance.now();
+
+    try {
+      const { error } = await createCard(deckId, {
+        word: targetWord,
+        translation: sourceWord,
+        word_example: targetExample,
+        trans_example: sourceExample,
+      });
+
+      if (!error) {
+        onClose();
+      } else {
+        setWordInputError(error);
+      }
+    } finally {
+      // const end = performance.now();
+      // const elapsedMs = end - start;
+      // const elapsedSec = elapsedMs / 1000;
+      // console.log(`took ${elapsedSec.toFixed(3)}s (${elapsedMs.toFixed(1)}ms)`);
+
+      setIsCreatingCard(false);
     }
   };
 
@@ -125,6 +145,7 @@ export const CreateNewCardModal = ({
       setSourceExample("");
       setTargetExample("");
       setWordInputError(undefined);
+      setIsCreatingCard(false);
     }
   }, [isOpen, languageNameByCode]);
 
@@ -137,6 +158,7 @@ export const CreateNewCardModal = ({
       submitLabel="Add Card"
       onClose={onClose}
       closeLabel="Cancel"
+      isLoading={isCreatingCard}
     >
       <View style={{ height: 600 }}>
         <ScrollView contentContainerStyle={{ gap: 14, paddingBottom: 50 }}>

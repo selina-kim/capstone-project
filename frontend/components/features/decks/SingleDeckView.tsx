@@ -1,5 +1,4 @@
 import { getSingleDeck } from "@/apis/endpoints/decks";
-import { EditIcon } from "@/assets/icons/EditIcon";
 import { PlusIcon } from "@/assets/icons/PlusIcon";
 import { CButton } from "@/components/common/CButton";
 import { CText } from "@/components/common/CText";
@@ -9,6 +8,9 @@ import { Card, DeckDetails } from "@/types/decks";
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { CreateNewCardModal } from "./CreateNewCardModal";
+import { PlusFilledIcon } from "@/assets/icons/PlusFilledIcon";
+import { CardsList } from "./CardsList";
+import { SingleDeckDetails } from "./SingleDeckDetails";
 
 interface SingleDeckViewProps {
   deckId: string;
@@ -31,7 +33,7 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
     };
 
     getDeck();
-  }, [deckId]);
+  }, [deckId, isCreateCardModalOpen]);
 
   const renderNoCardsBanner = () => (
     <View
@@ -61,86 +63,6 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
     </View>
   );
 
-  const renderDeckDetails = () => {
-    const DeckDetailItem = ({
-      label,
-      value,
-    }: {
-      label: string;
-      value: string | number | null;
-    }) => {
-      return (
-        <View style={{ width: "50%", marginBottom: 12 }}>
-          <CText bold style={{ color: COLORS.text.secondary }}>
-            {label}
-          </CText>
-          <CText>{value ?? "N/A"}</CText>
-        </View>
-      );
-    };
-
-    if (!deckDetails) {
-      return;
-    }
-
-    return (
-      <View
-        style={{
-          padding: 20,
-          borderRadius: 14,
-          width: "100%",
-          backgroundColor: COLORS.background.secondary,
-          ...SHADOWS.default,
-        }}
-      >
-        <CText
-          style={{
-            fontSize: 22,
-            lineHeight: 28,
-          }}
-          bold
-        >
-          {deckDetails.deck_name}
-        </CText>
-        <View
-          style={{
-            width: "100%",
-            display: "flex",
-            flexDirection: "row",
-            flexWrap: "wrap",
-            marginTop: 16,
-          }}
-        >
-          <DeckDetailItem label="Language" value={deckDetails.word_lang} />
-          <DeckDetailItem
-            label="Last Reviewed"
-            value={deckDetails.last_reviewed}
-          />
-          <DeckDetailItem label="Total Cards" value={cards.length} />
-          <DeckDetailItem label="Cards Due" value="TODO" />
-          <View>
-            <CText bold style={{ color: COLORS.text.secondary }}>
-              Description
-            </CText>
-            <CText>{deckDetails.description}</CText>
-          </View>
-        </View>
-        <Pressable
-          style={{
-            width: 20,
-            height: 20,
-            position: "absolute",
-            top: 20,
-            right: 20,
-          }}
-          onPress={() => console.log("edit clicked")}
-        >
-          <EditIcon />
-        </Pressable>
-      </View>
-    );
-  };
-
   if (!deckDetails) {
     return;
   }
@@ -157,7 +79,10 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
           rowGap: 20,
         }}
       >
-        {renderDeckDetails()}
+        <SingleDeckDetails
+          deckDetails={deckDetails}
+          numOfCards={cards.length}
+        />
         <CButton
           variant="primary"
           label="Export Deck"
@@ -168,11 +93,27 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
         {cards.length === 0 ? (
           renderNoCardsBanner()
         ) : (
-          <View>
-            <CText>todo</CText>
-          </View>
+          <CardsList cards={cards} />
         )}
       </ScrollView>
+      {cards.length !== 0 && (
+        <Pressable
+          style={{
+            right: 20,
+            bottom: 20,
+            position: "absolute",
+            width: 60,
+            height: 60,
+            padding: 15,
+            backgroundColor: COLORS.button.fillPrimary,
+            borderRadius: 10,
+            ...SHADOWS.smallButton,
+          }}
+          onPress={() => setIsCreateCardModalOpen(true)}
+        >
+          <PlusFilledIcon />
+        </Pressable>
+      )}
       <CreateNewCardModal
         deckId={deckId}
         wordLanguageCode={deckDetails.word_lang}

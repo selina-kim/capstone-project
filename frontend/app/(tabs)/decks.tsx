@@ -104,8 +104,8 @@ export default function Decks() {
       </ScrollView>
       <Pressable
         style={{
-          right: 10,
-          bottom: 10,
+          right: 20,
+          bottom: 20,
           position: "absolute",
           width: 60,
           height: 60,
