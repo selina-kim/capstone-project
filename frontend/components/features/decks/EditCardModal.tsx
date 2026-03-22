@@ -296,9 +296,7 @@ export const EditCardModal = ({
             onChangeText={setTargetExample}
             placeholder="e.g., 안녕하세요! 제 이름은 티누예요."
           />
-          {exampleError && (
-            <CText variant="inputError">{exampleError}</CText>
-          )}
+          {exampleError && <CText variant="inputError">{exampleError}</CText>}
           <CButton
             variant="primary"
             label={isGeneratingExample ? "Generating..." : "Auto-generate"}
@@ -332,9 +330,7 @@ export const EditCardModal = ({
               </CText>
             )}
           </View>
-          {imageError && (
-            <CText variant="inputError">{imageError}</CText>
-          )}
+          {imageError && <CText variant="inputError">{imageError}</CText>}
           <CButton
             variant="primary"
             label={isGeneratingImage ? "Generating..." : "Auto-generate"}

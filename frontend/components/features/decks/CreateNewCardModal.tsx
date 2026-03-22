@@ -242,7 +242,7 @@ export const CreateNewCardModal = ({
         setImageError(error);
         return;
       }
-      
+
       if (data.results && data.results.length > 0) {
         const imageUrl = data.results[0].urls.regular;
         setImage(imageUrl);
@@ -320,9 +320,7 @@ export const CreateNewCardModal = ({
             onChangeText={setTargetExample}
             placeholder="e.g., 안녕하세요! 제 이름은 티누예요."
           />
-          {exampleError && (
-            <CText variant="inputError">{exampleError}</CText>
-          )}
+          {exampleError && <CText variant="inputError">{exampleError}</CText>}
           <CButton
             variant="primary"
             label={isGeneratingExample ? "Generating..." : "Auto-generate"}
@@ -333,6 +331,7 @@ export const CreateNewCardModal = ({
           <CText bold>Image</CText>
           <View
             style={{
+              width: "100%",
               height: 200,
               backgroundColor: COLORS.background.secondary,
               display: "flex",
@@ -354,9 +353,7 @@ export const CreateNewCardModal = ({
               </CText>
             )}
           </View>
-          {imageError && (
-            <CText variant="inputError">{imageError}</CText>
-          )}
+          {imageError && <CText variant="inputError">{imageError}</CText>}
           <CButton
             variant="primary"
             label={isGeneratingImage ? "Generating..." : "Auto-generate"}

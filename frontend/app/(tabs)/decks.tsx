@@ -46,7 +46,6 @@ export default function Decks() {
           paddingHorizontal: 25,
           paddingVertical: 25,
           rowGap: 20,
-          borderColor: "red",
         }}
       >
         {decks.length === 0 ? (

@@ -168,7 +168,7 @@ export const CardsList = ({
             >
               <Image
                 source={{ uri: getImageUrl(card.image) ?? card.image }}
-                style={{ height: "100%", maxWidth: "auto",}}
+                style={{ height: "100%", maxWidth: "auto" }}
                 resizeMode="center"
               />
             </View>
