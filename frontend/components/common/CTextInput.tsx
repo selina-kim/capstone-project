@@ -65,7 +65,7 @@ export const CTextInput = ({
         placeholderTextColor={COLORS.text.tertiary}
         multiline={multiline}
         numberOfLines={numberOfLines}
-        style={[ 
+        style={[
           inputBaseStyle.base,
           inputVariants[variant],
           multiline && {

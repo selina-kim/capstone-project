@@ -11,17 +11,17 @@ import { Pressable, ScrollView, View } from "react-native";
 import { CreateNewCardModal } from "./CreateNewCardModal";
 
 interface SingleDeckViewProps {
-  deck_id: string;
+  deckId: string;
 }
 
-export const SingleDeckView = ({ deck_id }: SingleDeckViewProps) => {
+export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
   const [cards, setCards] = useState<Card[]>([]);
   const [deckDetails, setDeckDetails] = useState<DeckDetails>();
   const [isCreateCardModalOpen, setIsCreateCardModalOpen] = useState(false);
 
   useEffect(() => {
     const getDeck = async () => {
-      const { data, error } = await getSingleDeck(deck_id);
+      const { data, error } = await getSingleDeck(deckId);
 
       setCards(data.cards);
       setDeckDetails(data.deck);
@@ -31,7 +31,7 @@ export const SingleDeckView = ({ deck_id }: SingleDeckViewProps) => {
     };
 
     getDeck();
-  }, [deck_id]);
+  }, [deckId]);
 
   const renderNoCardsBanner = () => (
     <View
@@ -141,6 +141,10 @@ export const SingleDeckView = ({ deck_id }: SingleDeckViewProps) => {
     );
   };
 
+  if (!deckDetails) {
+    return;
+  }
+
   return (
     <View style={{ height: "100%" }}>
       <ScrollView
@@ -170,6 +174,9 @@ export const SingleDeckView = ({ deck_id }: SingleDeckViewProps) => {
         )}
       </ScrollView>
       <CreateNewCardModal
+        deckId={deckId}
+        wordLanguageCode={deckDetails.word_lang}
+        translationLanguageCode={deckDetails.trans_lang}
         isOpen={isCreateCardModalOpen}
         onClose={() => setIsCreateCardModalOpen(false)}
       />

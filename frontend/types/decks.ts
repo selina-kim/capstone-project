@@ -14,7 +14,6 @@ export interface Card {
   c_id: number;
   word: string;
   translation: string;
-  definition: string | null;
   word_example: string | null;
   trans_example: string | null;
   word_roman: string | null;
@@ -49,4 +48,49 @@ export interface CreateDeckRequestPayload {
   description?: string;
   is_public?: boolean;
   link?: string;
+}
+
+export interface CreateCardRequestPayload {
+  word: string;
+  translation: string;
+  word_example?: string;
+  trans_example?: string;
+  image?: string;
+  word_audio?: string;
+  trans_audio?: string;
+  word_roman?: string;
+  trans_roman?: string;
+}
+
+export interface UpdateCardRequestPayload {
+  word?: string;
+  translation?: string;
+  word_example?: string;
+  trans_example?: string;
+  image?: string;
+  word_audio?: string;
+  trans_audio?: string;
+  word_roman?: string;
+  trans_roman?: string;
+}
+
+export interface CardListPagination {
+  page: number;
+  per_page: number;
+  total: number;
+  total_pages: number;
+}
+
+export interface DeckCardsResponseData {
+  cards: Card[];
+  pagination: CardListPagination;
+}
+
+export interface CardMutationResponseData {
+  message: string;
+  card: Card;
+}
+
+export interface ReviewCardsResponseData {
+  cards: Card[];
 }

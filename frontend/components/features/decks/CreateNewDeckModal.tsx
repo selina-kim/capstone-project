@@ -1,3 +1,4 @@
+import { getSupportedLanguages } from "@/apis/endpoints/translation";
 import { createDeck } from "@/apis/endpoints/decks";
 import { CText } from "@/components/common/CText";
 import { CTextInput } from "@/components/common/CTextInput";
@@ -5,17 +6,6 @@ import { Dropdown } from "@/components/common/Dropdown";
 import { Modal } from "@/components/common/Modal";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
-
-// temporary TODO
-const LANGUAGES = [
-  "Korean",
-  "Japanese",
-  "Mandarin",
-  "French",
-  "lang1",
-  "lang2",
-  "lang3",
-];
 
 interface CreateNewDeckModalProps {
   isOpen: boolean;
@@ -29,6 +19,10 @@ export const CreateNewDeckModal = ({
   const [deckName, setDeckName] = useState("");
   const [language, setLanguage] = useState<string | null>(null);
   const [description, setDescription] = useState("");
+  const [languageOptions, setLanguageOptions] = useState<string[]>([]);
+  const [languageCodeByName, setLanguageCodeByName] = useState<
+    Record<string, string>
+  >({});
 
   const [deckNameInputError, setDeckNameInputError] = useState<string>();
   const [languageInputError, setLanguageInputError] = useState<string>();
@@ -39,12 +33,14 @@ export const CreateNewDeckModal = ({
 
     const isDeckNameEmpty = deckName.trim() === "";
 
-    if (isDeckNameEmpty || !language) {
+    const selectedLanguageCode = language ? languageCodeByName[language] : null;
+
+    if (isDeckNameEmpty || !selectedLanguageCode) {
       if (isDeckNameEmpty) {
         setDeckNameInputError("Deck name cannot be empty");
       }
 
-      if (!language) {
+      if (!selectedLanguageCode) {
         setLanguageInputError("Language must be selected");
       }
 
@@ -53,7 +49,7 @@ export const CreateNewDeckModal = ({
 
     const { error } = await createDeck({
       deck_name: deckName,
-      word_lang: language,
+      word_lang: selectedLanguageCode.toLowerCase(),
       trans_lang: "en",
       description: description,
       is_public: false,
@@ -67,6 +63,33 @@ export const CreateNewDeckModal = ({
   };
 
   useEffect(() => {
+    const loadSupportedLanguages = async () => {
+      const { data, error } = await getSupportedLanguages();
+
+      if (error) {
+        setLanguageInputError("Failed to load languages");
+        return;
+      }
+
+      const sourceLanguages = data?.source ?? [];
+
+      const options = sourceLanguages.map((lang) => lang.name);
+      const codeMap = sourceLanguages.reduce(
+        (acc, lang) => ({
+          ...acc,
+          [lang.name]: lang.code,
+        }),
+        {} as Record<string, string>,
+      );
+
+      setLanguageOptions(options);
+      setLanguageCodeByName(codeMap);
+    };
+
+    if (isOpen && languageOptions.length === 0) {
+      loadSupportedLanguages();
+    }
+
     if (!isOpen) {
       setDeckName("");
       setLanguage(null);
@@ -74,7 +97,7 @@ export const CreateNewDeckModal = ({
       setDeckNameInputError(undefined);
       setLanguageInputError(undefined);
     }
-  }, [isOpen]);
+  }, [isOpen, languageOptions.length]);
 
   return (
     <Modal
@@ -100,7 +123,7 @@ export const CreateNewDeckModal = ({
           <CText variant="inputLabel">Language *</CText>
           <Dropdown
             value={language}
-            options={LANGUAGES}
+            options={languageOptions}
             onSelect={setLanguage}
             placeholder="Select a language"
           />
