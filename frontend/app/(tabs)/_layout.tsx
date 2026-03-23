@@ -41,7 +41,8 @@ function TabLayoutContent() {
   const isOnRevisionTab = pathname === "/revision";
 
   const [menuVisible, setMenuVisible] = useState(false);
-  const [isExitReviewModalVisible, setIsExitReviewModalVisible] = useState(false);
+  const [isExitReviewModalVisible, setIsExitReviewModalVisible] =
+    useState(false);
   const [pendingExitAction, setPendingExitAction] = useState<
     PendingExitAction | undefined
   >();

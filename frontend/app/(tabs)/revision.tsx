@@ -17,8 +17,11 @@ export default function Revision() {
   const [error, setError] = useState<string>();
   const pathname = usePathname();
   const { getLanguageName } = useLanguageOptions();
-  const { isReviewSessionActive, setIsReviewSessionActive, exitReviewSessionSignal } =
-    useReviewSession();
+  const {
+    isReviewSessionActive,
+    setIsReviewSessionActive,
+    exitReviewSessionSignal,
+  } = useReviewSession();
 
   const getDueDecks = useCallback(async () => {
     setIsLoading(true);

@@ -7,9 +7,9 @@ interface ReviewSessionContextValue {
   requestExitReviewSession: () => void;
 }
 
-const ReviewSessionContext = createContext<ReviewSessionContextValue | undefined>(
-  undefined,
-);
+const ReviewSessionContext = createContext<
+  ReviewSessionContextValue | undefined
+>(undefined);
 
 interface ReviewSessionProviderProps {
   children: ReactNode;
@@ -46,7 +46,9 @@ export const useReviewSession = () => {
   const context = useContext(ReviewSessionContext);
 
   if (!context) {
-    throw new Error("useReviewSession must be used within ReviewSessionProvider");
+    throw new Error(
+      "useReviewSession must be used within ReviewSessionProvider",
+    );
   }
 
   return context;
