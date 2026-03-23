@@ -1,6 +1,7 @@
 import { getSingleDeck } from "@/apis/endpoints/decks";
 import { PlusIcon } from "@/assets/icons/PlusIcon";
 import { CButton } from "@/components/common/CButton";
+import { Modal } from "@/components/common/Modal";
 import { CText } from "@/components/common/CText";
 import { COLORS } from "@/constants/colors";
 import { SHADOWS } from "@/constants/shadows";
@@ -23,6 +24,8 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
   const router = useRouter();
   const [cards, setCards] = useState<Card[]>([]);
   const [deckDetails, setDeckDetails] = useState<DeckDetails>();
+  const [isStartReviewModalVisible, setIsStartReviewModalVisible] =
+    useState(false);
   const [isCreateCardModalOpen, setIsCreateCardModalOpen] = useState(false);
   const [isEditDeckModalOpen, setIsEditDeckModalOpen] = useState(false);
   const [isEditCardModalOpen, setIsEditCardModalOpen] = useState(false);
@@ -131,15 +134,7 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
             borderRadius: 10,
             ...SHADOWS.smallButton,
           }}
-            onPress={() =>
-              router.push({
-                pathname: "/(tabs)/revision",
-                params: {
-                  deckId,
-                  deckName: deckDetails.deck_name,
-                },
-              })
-            }
+            onPress={() => setIsStartReviewModalVisible(true)}
         >
           <OpenBookIcon strokeWidth={3}/>
         </Pressable>
@@ -225,6 +220,24 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
           }}
         />
       )}
+      <Modal
+        visible={isStartReviewModalVisible}
+        header="Are you sure?"
+        subheader="This will start the review session for this deck"
+        submitLabel="Start Review"
+        closeLabel="Cancel"
+        onSubmit={() => {
+          setIsStartReviewModalVisible(false);
+          router.push({
+            pathname: "/(tabs)/revision",
+            params: {
+              deckId,
+              deckName: deckDetails.deck_name,
+            },
+          });
+        }}
+        onClose={() => setIsStartReviewModalVisible(false)}
+      />
     </View>
   );
 };
