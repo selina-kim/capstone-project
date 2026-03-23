@@ -1,5 +1,4 @@
 import { getDecksWithDueCards } from "@/apis/endpoints/decks";
-import { Modal } from "@/components/common/Modal";
 import { CText } from "@/components/common/CText";
 import { RevisionDeckPreview } from "@/components/features/revision/RevisionDeckPreview";
 import { SingleDeckReview } from "@/components/features/revision/SingleDeckReview";
@@ -19,9 +18,6 @@ interface FocusedReviewDeck {
 export default function Revision() {
   const [decksList, setDecksList] = useState<DueDeck[]>([]);
   const [focusedDeck, setFocusedDeck] = useState<FocusedReviewDeck>();
-  const [pendingDeck, setPendingDeck] = useState<FocusedReviewDeck>();
-  const [isStartReviewModalVisible, setIsStartReviewModalVisible] =
-    useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>();
   const pathname = usePathname();
@@ -118,32 +114,18 @@ export default function Revision() {
           language={getLanguageName(deck.word_lang)}
           cardsDue={deck.due_count}
           onReview={() => {
-            setPendingDeck({
+            setFocusedDeck({
               d_id: deck.d_id,
               deck_name: deck.deck_name,
             });
-            setIsStartReviewModalVisible(true);
+            setIsReviewSessionActive(true);
           }}
         />
       ))}
     </ScrollView>
   );
 
-  const handleStartReview = () => {
-    if (!pendingDeck) {
-      return;
-    }
 
-    setFocusedDeck(pendingDeck);
-    setPendingDeck(undefined);
-    setIsStartReviewModalVisible(false);
-    setIsReviewSessionActive(true);
-  };
-
-  const handleCancelStartReview = () => {
-    setPendingDeck(undefined);
-    setIsStartReviewModalVisible(false);
-  };
 
   return (
     <>
@@ -169,15 +151,6 @@ export default function Revision() {
           renderDecksList()
         )}
       </View>
-      <Modal
-        visible={isStartReviewModalVisible}
-        header="Are you sure?"
-        subheader="This will start the review session for this deck"
-        submitLabel="Start Review"
-        closeLabel="Cancel"
-        onSubmit={handleStartReview}
-        onClose={handleCancelStartReview}
-      />
     </>
   );
 }
