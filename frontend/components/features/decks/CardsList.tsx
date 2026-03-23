@@ -174,22 +174,20 @@ export const CardsList = ({
             </View>
           )}
           <CardButtons card={card} />
-          {cardIdToDelete && (
-            <Modal
-              visible={!!cardIdToDelete}
-              header="Are you sure?"
-              submitLabel="Delete Card"
-              subheader="This action will delete this card permanently"
-              submitVariant="criticalPrimary"
-              closeLabel="Cancel"
-              onClose={() => setCardIdToDelete(undefined)}
-              onSubmit={() =>
-                cardIdToDelete && handleDeleteCard(cardIdToDelete)
-              }
-            />
-          )}
         </View>
       ))}
+      {cardIdToDelete && (
+        <Modal
+          visible={!!cardIdToDelete}
+          header="Are you sure?"
+          submitLabel="Delete Card"
+          subheader="This action will delete this card permanently"
+          submitVariant="criticalPrimary"
+          closeLabel="Cancel"
+          onClose={() => setCardIdToDelete(undefined)}
+          onSubmit={() => cardIdToDelete && handleDeleteCard(cardIdToDelete)}
+        />
+      )}
     </View>
   );
 };
