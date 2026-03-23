@@ -623,3 +623,68 @@ def test_end_review_triggers_optimization(client, auth_headers, monkeypatch):
 
     assert params_after is not None
     assert params_after != params_before
+
+# ==================== Get Due Cards Route Tests ====================
+
+def get_card_id_for_test_user():
+    """Helper to get a valid card ID owned by the test user."""
+    with get_db_cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT c.c_id FROM Cards c
+            JOIN Decks d ON c.d_id = d.d_id
+            WHERE d.u_id = 'test-user-id'
+            LIMIT 1
+            """
+        )
+        row = cursor.fetchone()
+        return row['c_id'] if row else None
+
+def set_card_due_in_past(card_id):
+    """Set a card's due_date to one day in the past."""
+    with get_db_cursor(commit=True) as cursor:
+        cursor.execute(
+            "UPDATE Cards SET due_date = NOW() - INTERVAL '1 day' WHERE c_id = %s",
+            (card_id,)
+        )
+
+def test_get_due_cards_no_auth(client):
+    """Test that GET /due-cards without authentication returns 401."""
+    response = client.get("/due-cards")
+    assert response.status_code == 401
+
+def test_get_due_cards_empty_when_none_due(client, auth_headers):
+    """Test that GET /due-cards returns an empty list when no cards have a past due_date."""
+    response = client.get("/due-cards", headers=auth_headers)
+    assert response.status_code == 200
+    result = json.loads(response.data)
+    assert "due_cards" in result
+    assert result["due_cards"] == []
+
+def test_get_due_cards_success(client, auth_headers):
+    """Test that GET /due-cards returns cards with a past due_date."""
+    card_id = get_card_id_for_test_user()
+    assert card_id is not None, "No cards found for test user"
+    set_card_due_in_past(card_id)
+
+    response = client.get("/due-cards", headers=auth_headers)
+    assert response.status_code == 200
+    result = json.loads(response.data)
+    assert "due_cards" in result
+    card_ids = [card["card_id"] for card in result["due_cards"]]
+    assert card_id in card_ids
+
+def test_get_due_cards_database_error(client, auth_headers, monkeypatch):
+    """Test that a DatabaseError raised by the service returns HTTP 500."""
+    from routes.fsrs import fsrs_service
+    from services.fsrs_service import DatabaseError
+
+    def raise_db_error(*args, **kwargs):
+        raise DatabaseError("simulated db failure")
+
+    monkeypatch.setattr(fsrs_service, 'get_due_cards', raise_db_error)
+
+    response = client.get("/due-cards", headers=auth_headers)
+    assert response.status_code == 500
+    result = json.loads(response.data)
+    assert "Database error" in result["error"]

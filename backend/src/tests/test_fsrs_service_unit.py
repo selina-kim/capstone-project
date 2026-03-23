@@ -658,3 +658,43 @@ class TestFsrsServiceUnit:
 
         with pytest.raises(DatabaseError):
             FsrsService.reset_optimization_params("user1")
+
+    # --- get_due_cards tests ---
+    @patch('services.fsrs_service.get_db_cursor')
+    def test_get_due_cards_success(self, mock_get_db_cursor):
+        """Test that get_due_cards returns a list of due card dicts for the user."""
+        mock_cursor = MagicMock()
+        mock_get_db_cursor.return_value.__enter__.return_value = mock_cursor
+
+        due_date = datetime.now(timezone.utc)
+        mock_cursor.fetchall.return_value = [
+            {"c_id": 1, "due_date": due_date},
+            {"c_id": 2, "due_date": due_date},
+        ]
+
+        result = FsrsService.get_due_cards("user1")
+
+        assert len(result) == 2
+        assert result[0] == {"card_id": 1, "due_date": due_date}
+        assert result[1] == {"card_id": 2, "due_date": due_date}
+
+    @patch('services.fsrs_service.get_db_cursor')
+    def test_get_due_cards_empty(self, mock_get_db_cursor):
+        """Test that get_due_cards returns an empty list when no cards are due."""
+        mock_cursor = MagicMock()
+        mock_get_db_cursor.return_value.__enter__.return_value = mock_cursor
+        mock_cursor.fetchall.return_value = []
+
+        result = FsrsService.get_due_cards("user1")
+
+        assert result == []
+
+    @patch('services.fsrs_service.get_db_cursor')
+    def test_get_due_cards_db_error(self, mock_get_db_cursor):
+        """Test that get_due_cards wraps psycopg2 errors in DatabaseError."""
+        mock_cursor = MagicMock()
+        mock_get_db_cursor.return_value.__enter__.return_value = mock_cursor
+        mock_cursor.execute.side_effect = psycopg2.Error("db fail")
+
+        with pytest.raises(DatabaseError):
+            FsrsService.get_due_cards("user1")

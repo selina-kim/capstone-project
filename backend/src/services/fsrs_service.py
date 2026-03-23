@@ -606,3 +606,29 @@ class FsrsService:
         except psycopg2.Error as e:            
             raise DatabaseError(str(e))
     
+    @staticmethod
+    def get_due_cards(user_id: str) -> list[dict]:
+        """
+        Retrieve all cards currently due for review for the specified user.
+
+        Args:
+            user_id: The ID of the user whose due cards to retrieve.
+        Returns:
+            A list of dictionaries, each containing the card_id and due_date of a card that is currently due for review.
+        """
+        try:
+            with get_db_cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT c.c_id, c.due_date
+                    FROM Cards c
+                    JOIN Decks d ON c.d_id = d.d_id
+                    WHERE d.u_id = %s AND c.due_date <= NOW()
+                    """,
+                    (user_id,),
+                )
+                results = cursor.fetchall()
+        except psycopg2.Error as e:
+            raise DatabaseError(str(e))
+
+        return [{"card_id": row["c_id"], "due_date": row["due_date"]} for row in results]
