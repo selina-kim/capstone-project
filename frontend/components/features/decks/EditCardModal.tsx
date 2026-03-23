@@ -153,14 +153,46 @@ export const EditCardModal = ({
 
     setExampleError(undefined);
 
-    if (sourceWord.trim() === "") {
-      setExampleError("The word(s) cannot be empty");
-      return;
-    }
-
     setIsGeneratingExample(true);
 
     try {
+      if (sourceExample.trim()) {
+        const { data, error } = await getTranslation(
+          sourceExample.trim(),
+          wordLanguageCode.toUpperCase(),
+          translationLanguageCode.toUpperCase(),
+        );
+
+        if (error) {
+          setExampleError(error);
+          return;
+        }
+
+        setTargetExample(data.translatedText ?? "");
+        return;
+      }
+
+      if (targetExample.trim()) {
+        const { data, error } = await getTranslation(
+          targetExample.trim(),
+          translationLanguageCode.toUpperCase(),
+          wordLanguageCode.toUpperCase(),
+        );
+
+        if (error) {
+          setExampleError(error);
+          return;
+        }
+
+        setSourceExample(data.translatedText ?? "");
+        return;
+      }
+
+      if (sourceWord.trim() === "") {
+        setExampleError("The word(s) cannot be empty");
+        return;
+      }
+
       let nextSourceExample = sourceExample.trim();
 
       // If source example is empty, fetch one from dictionary.
@@ -203,6 +235,8 @@ export const EditCardModal = ({
       }
 
       setTargetExample(data.translatedText ?? "");
+    } catch {
+      setExampleError("Failed to generate example");
     } finally {
       setIsGeneratingExample(false);
     }
