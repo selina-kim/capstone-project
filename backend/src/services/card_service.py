@@ -302,6 +302,9 @@ class CardService:
         image_url = card_data.get("image")
         if image_url and self._is_url(image_url):
             image_object_id = self._download_and_store_image(image_url, card_id)
+            # Fallback: persist the original URL if MinIO storage fails.
+            if not image_object_id:
+                image_object_id = image_url
 
         # Generate TTS if not provided
         if not card_data.get("word_audio"):
@@ -409,6 +412,9 @@ class CardService:
                 if old_image_id:
                     self._delete_from_minio(old_image_id)
                 new_image_id = self._download_and_store_image(image_value, card_id)
+                # Fallback: keep original external URL if MinIO storage fails.
+                if not new_image_id:
+                    new_image_id = image_value
                 image_changed = True
             elif image_value is None or image_value == "":
                 # Image removal requested - delete old and set to NULL
