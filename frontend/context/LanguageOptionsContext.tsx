@@ -8,6 +8,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 
@@ -15,6 +16,7 @@ interface LanguageOptionsContextType {
   sourceLanguages: SupportedTranslationLanguagesResponseData["source"];
   targetLanguages: SupportedTranslationLanguagesResponseData["target"];
   languageNameByCode: Record<string, string>;
+  languageCodeByName: Record<string, string>;
   isLoading: boolean;
   error: string | null;
   refreshLanguages: () => Promise<void>;
@@ -24,6 +26,7 @@ const LanguageOptionsContext = createContext<LanguageOptionsContextType>({
   sourceLanguages: [],
   targetLanguages: [],
   languageNameByCode: {},
+  languageCodeByName: {},
   isLoading: true,
   error: null,
   refreshLanguages: async () => {},
@@ -48,6 +51,18 @@ export const LanguageOptionsProvider = ({
   >({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const languageCodeByName = useMemo(
+    () =>
+      sourceLanguages.reduce(
+        (acc, language) => ({
+          ...acc,
+          [language.name]: language.code,
+        }),
+        {} as Record<string, string>,
+      ),
+    [sourceLanguages],
+  );
 
   const refreshLanguages = useCallback(async () => {
     if (!user) {
@@ -113,6 +128,7 @@ export const LanguageOptionsProvider = ({
         sourceLanguages,
         targetLanguages,
         languageNameByCode,
+        languageCodeByName,
         isLoading,
         error,
         refreshLanguages,

@@ -30,20 +30,16 @@ export const CreateNewDeckModal = ({
   const {
     sourceLanguages,
     languageNameByCode,
+    languageCodeByName,
     error: languageLoadError,
   } = useLanguageOptions();
 
   const [deckNameInputError, setDeckNameInputError] = useState<string>();
   const [languageInputError, setLanguageInputError] = useState<string>();
 
-  const languageOptions = sourceLanguages.map((lang) => lang.name);
-  const languageCodeByName = sourceLanguages.reduce(
-    (acc, lang) => ({
-      ...acc,
-      [lang.name]: lang.code,
-    }),
-    {} as Record<string, string>,
-  );
+  const languageOptions = sourceLanguages
+    .filter((lang) => lang.code.toUpperCase() !== "EN")
+    .map((lang) => lang.name);
 
   const isEditMode = mode === "edit";
 
