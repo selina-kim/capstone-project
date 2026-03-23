@@ -12,12 +12,15 @@ import { PlusFilledIcon } from "@/assets/icons/PlusFilledIcon";
 import { CardsList } from "./CardsList";
 import { SingleDeckDetails } from "./SingleDeckDetails";
 import { CreateNewDeckModal } from "./CreateNewDeckModal";
+import { OpenBookIcon } from "@/assets/icons/OpenBookIcon";
+import { useRouter } from "expo-router";
 
 interface SingleDeckViewProps {
   deckId: string;
 }
 
 export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
+  const router = useRouter();
   const [cards, setCards] = useState<Card[]>([]);
   const [deckDetails, setDeckDetails] = useState<DeckDetails>();
   const [isCreateCardModalOpen, setIsCreateCardModalOpen] = useState(false);
@@ -115,11 +118,33 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
         )}
       </ScrollView>
       {cards.length !== 0 && (
-        <Pressable
-          style={{
-            right: 20,
+        <View style={{right: 20,
             bottom: 20,
             position: "absolute",
+            display: "flex", rowGap: 10}}>
+          <Pressable
+          style={{
+            width: 60,
+            height: 60,
+            padding: 15,
+            backgroundColor: COLORS.button.fillPrimary,
+            borderRadius: 10,
+            ...SHADOWS.smallButton,
+          }}
+            onPress={() =>
+              router.push({
+                pathname: "/(tabs)/revision",
+                params: {
+                  deckId,
+                  deckName: deckDetails.deck_name,
+                },
+              })
+            }
+        >
+          <OpenBookIcon strokeWidth={3}/>
+        </Pressable>
+        <Pressable
+          style={{
             width: 60,
             height: 60,
             padding: 15,
@@ -128,9 +153,10 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
             ...SHADOWS.smallButton,
           }}
           onPress={() => setIsCreateCardModalOpen(true)}
-        >
+          >
           <PlusFilledIcon />
         </Pressable>
+          </View>
       )}
       <CreateNewCardModal
         deckId={deckId}

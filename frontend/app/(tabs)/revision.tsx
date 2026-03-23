@@ -6,17 +6,31 @@ import { useLanguageOptions } from "@/context/LanguageOptionsContext";
 import { useReviewSession } from "@/context/ReviewSessionContext";
 import { DueDeck } from "@/types/decks";
 import { useFocusEffect } from "@react-navigation/native";
-import { usePathname, useRouter } from "expo-router";
+import { useLocalSearchParams, usePathname, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
 
+interface FocusedReviewDeck {
+  d_id: string;
+  deck_name: string;
+}
+
 export default function Revision() {
   const [decksList, setDecksList] = useState<DueDeck[]>([]);
-  const [focusedDeck, setFocusedDeck] = useState<DueDeck>();
+  const [focusedDeck, setFocusedDeck] = useState<FocusedReviewDeck>();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>();
   const pathname = usePathname();
   const router = useRouter();
+  const params = useLocalSearchParams<{ deckId?: string; deckName?: string }>();
+  const routeDeckId =
+    typeof params.deckId === "string" && params.deckId.trim().length > 0
+      ? params.deckId
+      : undefined;
+  const routeDeckName =
+    typeof params.deckName === "string" && params.deckName.trim().length > 0
+      ? params.deckName
+      : "Deck Review";
   const { getLanguageName } = useLanguageOptions();
   const {
     isReviewSessionActive,
@@ -55,6 +69,25 @@ export default function Revision() {
   }, [exitReviewSessionSignal, getDueDecks, setIsReviewSessionActive]);
 
   useEffect(() => {
+    if (!routeDeckId || focusedDeck) {
+      return;
+    }
+
+    setFocusedDeck({
+      d_id: routeDeckId,
+      deck_name: routeDeckName,
+    });
+    setIsReviewSessionActive(true);
+    router.replace("/(tabs)/revision");
+  }, [
+    focusedDeck,
+    routeDeckId,
+    routeDeckName,
+    router,
+    setIsReviewSessionActive,
+  ]);
+
+  useEffect(() => {
     if (pathname === "/revision" || isReviewSessionActive || !focusedDeck) {
       return;
     }
@@ -87,7 +120,10 @@ export default function Revision() {
           language={getLanguageName(deck.word_lang)}
           cardsDue={deck.due_count}
           onReview={() => {
-            setFocusedDeck(deck);
+            setFocusedDeck({
+              d_id: deck.d_id,
+              deck_name: deck.deck_name,
+            });
             setIsReviewSessionActive(true);
           }}
         />

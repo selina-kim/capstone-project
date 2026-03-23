@@ -168,7 +168,7 @@ export const SingleDeckReview = ({
               variant="secondary"
               label="Go Home"
               onPress={onGoHome}
-              Icon={<HomeIcon width={3.2} stroke={COLORS.text.primary} />}
+              Icon={<HomeIcon strokeWidth={3.2} stroke={COLORS.text.primary} />}
             />
           </View>
         </View>
