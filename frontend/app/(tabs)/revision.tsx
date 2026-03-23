@@ -79,7 +79,13 @@ export default function Revision() {
     });
     setIsReviewSessionActive(true);
     router.replace("/(tabs)/revision");
-  }, [focusedDeck, routeDeckId, routeDeckName, router, setIsReviewSessionActive]);
+  }, [
+    focusedDeck,
+    routeDeckId,
+    routeDeckName,
+    router,
+    setIsReviewSessionActive,
+  ]);
 
   useEffect(() => {
     if (pathname === "/revision" || isReviewSessionActive || !focusedDeck) {
@@ -124,8 +130,6 @@ export default function Revision() {
       ))}
     </ScrollView>
   );
-
-
 
   return (
     <>

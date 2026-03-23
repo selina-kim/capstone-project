@@ -121,37 +121,42 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
         )}
       </ScrollView>
       {cards.length !== 0 && (
-        <View style={{right: 20,
+        <View
+          style={{
+            right: 20,
             bottom: 20,
             position: "absolute",
-            display: "flex", rowGap: 10}}>
-          <Pressable
-          style={{
-            width: 60,
-            height: 60,
-            padding: 15,
-            backgroundColor: COLORS.button.fillPrimary,
-            borderRadius: 10,
-            ...SHADOWS.smallButton,
+            display: "flex",
+            rowGap: 10,
           }}
-            onPress={() => setIsStartReviewModalVisible(true)}
         >
-          <OpenBookIcon strokeWidth={3}/>
-        </Pressable>
-        <Pressable
-          style={{
-            width: 60,
-            height: 60,
-            padding: 15,
-            backgroundColor: COLORS.button.fillPrimary,
-            borderRadius: 10,
-            ...SHADOWS.smallButton,
-          }}
-          onPress={() => setIsCreateCardModalOpen(true)}
+          <Pressable
+            style={{
+              width: 60,
+              height: 60,
+              padding: 15,
+              backgroundColor: COLORS.button.fillPrimary,
+              borderRadius: 10,
+              ...SHADOWS.smallButton,
+            }}
+            onPress={() => setIsStartReviewModalVisible(true)}
           >
-          <PlusFilledIcon />
-        </Pressable>
-          </View>
+            <OpenBookIcon strokeWidth={3} />
+          </Pressable>
+          <Pressable
+            style={{
+              width: 60,
+              height: 60,
+              padding: 15,
+              backgroundColor: COLORS.button.fillPrimary,
+              borderRadius: 10,
+              ...SHADOWS.smallButton,
+            }}
+            onPress={() => setIsCreateCardModalOpen(true)}
+          >
+            <PlusFilledIcon />
+          </Pressable>
+        </View>
       )}
       <CreateNewCardModal
         deckId={deckId}

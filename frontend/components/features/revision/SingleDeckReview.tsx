@@ -1,6 +1,7 @@
 import { getReviewCards } from "@/apis/endpoints/cards";
 import { HomeIcon } from "@/assets/icons/HomeIcon";
 import { RepeatIcon } from "@/assets/icons/RepeatIcon";
+import { SoundIcon } from "@/assets/icons/SoundIcon";
 import { CButton } from "@/components/common/CButton";
 import { CText } from "@/components/common/CText";
 import { COLORS } from "@/constants/colors";
@@ -213,13 +214,28 @@ export const SingleDeckReview = ({
               style={{
                 padding: 20,
                 borderRadius: 14,
-                borderColor: COLORS.text.primary,
+                borderColor: COLORS.icon.outlinePrimary,
                 borderWidth: 2,
                 width: "100%",
-                backgroundColor: COLORS.background.primary,
+                backgroundColor: isFrontSide ? COLORS.background.primary : COLORS.background.secondary,
                 rowGap: 14,
+                position: "relative",
               }}
             >
+              <Pressable
+                style={{
+                  position: "absolute",
+                  top: 10,
+                  left: 10,
+                  zIndex: 10,
+                  padding: 8,
+                }}
+                onPress={() =>
+                  console.log(`TTS clicked for card ${currentCard.word}`)
+                }
+              >
+                <SoundIcon />
+              </Pressable>
               <CText
                 style={{
                   textAlign: "center",
@@ -261,14 +277,13 @@ export const SingleDeckReview = ({
                   {currentCard.trans_example}
                 </CText>
               )}
-
               <CText
                 style={{
                   textAlign: "center",
                   color: COLORS.text.secondary,
                 }}
               >
-                Tap to flip card
+                {isFrontSide ? "(Front)\n" : "(Back)\n"} Tap to flip card
               </CText>
             </View>
           </Pressable>
