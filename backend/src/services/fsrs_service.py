@@ -543,7 +543,7 @@ class FsrsService:
     @staticmethod
     def num_reviews_per_optimize(user_id: str) -> int:
         """
-        Get the number of reviews after which the user should be optimized.
+        Get the number of reviews after which the user's parameters should be optimized.
 
         Args:
             user_id: The ID of the user to check.
