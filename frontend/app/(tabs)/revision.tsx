@@ -6,7 +6,7 @@ import { useLanguageOptions } from "@/context/LanguageOptionsContext";
 import { useReviewSession } from "@/context/ReviewSessionContext";
 import { DueDeck } from "@/types/decks";
 import { useFocusEffect } from "@react-navigation/native";
-import { usePathname } from "expo-router";
+import { usePathname, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
 
@@ -16,6 +16,7 @@ export default function Revision() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>();
   const pathname = usePathname();
+  const router = useRouter();
   const { getLanguageName } = useLanguageOptions();
   const {
     isReviewSessionActive,
@@ -101,11 +102,16 @@ export default function Revision() {
           deckId={focusedDeck.d_id}
           deckName={focusedDeck.deck_name}
           onReviewComplete={() => setIsReviewSessionActive(false)}
-          onKeepStudying={() => setIsReviewSessionActive(true)}
-          onGoHome={() => {
+          onKeepStudying={() => {
             setFocusedDeck(undefined);
             setIsReviewSessionActive(false);
             getDueDecks();
+            router.push("/(tabs)/revision");
+          }}
+          onGoHome={() => {
+            setFocusedDeck(undefined);
+            setIsReviewSessionActive(false);
+            router.push("/(tabs)");
           }}
         />
       ) : (

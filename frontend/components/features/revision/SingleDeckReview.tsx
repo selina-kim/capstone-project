@@ -1,4 +1,5 @@
 import { getReviewCards } from "@/apis/endpoints/cards";
+import { HomeIcon } from "@/assets/icons/HomeIcon";
 import { RepeatIcon } from "@/assets/icons/RepeatIcon";
 import { CButton } from "@/components/common/CButton";
 import { CText } from "@/components/common/CText";
@@ -92,7 +93,6 @@ export const SingleDeckReview = ({
 
   const handleKeepStudying = () => {
     onKeepStudying();
-    getCardsToReview();
   };
 
   return (
@@ -158,13 +158,13 @@ export const SingleDeckReview = ({
               marginTop: 8,
             }}
           >
-            <CButton variant="primary" label="Go Home" onPress={onGoHome} />
             <CButton
-              variant="secondary"
+              variant="primary"
               label="Keep Studying"
               onPress={handleKeepStudying}
               Icon={<RepeatIcon />}
             />
+            <CButton variant="secondary" label="Go Home" onPress={onGoHome} Icon={<HomeIcon width={3.2} stroke={COLORS.text.primary} />}/>
           </View>
         </View>
       )}
