@@ -193,11 +193,13 @@ class FsrsService:
             with get_db_cursor(commit=True) as cursor:
                 
                 # if the grade is again, we consider it a failed recall
+                # we increment the fail_count and reset the successful_reps to 0 since it's a failed recall
                 if grade == Grade.Again:
                     cursor.execute(
                         """
                         UPDATE Cards
-                        SET fail_count = fail_count + 1
+                        SET fail_count = fail_count + 1, 
+                            successful_reps = 0 
                         WHERE c_id = %s
                         """,
                         (card_id,),

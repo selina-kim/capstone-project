@@ -248,6 +248,7 @@ class TestFsrsServiceUnit:
         args, _ = mock_cursor.execute.call_args
         assert "UPDATE Cards" in args[0]
         assert "fail_count = fail_count + 1" in args[0]
+        assert "successful_reps = 0" in args[0]
    
     def test_update_card_fail_success_count_invalid_grade(self):
         """Test that update_card_fail_success_count rejects an invalid grade."""

@@ -169,10 +169,9 @@ def test_log_review_again_increments_fail_count(client, auth_headers):
     """Test that grading Again (1) increments the card's fail_count."""
     card_id = get_any_card_id()
     assert card_id is not None, "No cards available for testing"
-
     with get_db_cursor() as cursor:
         cursor.execute("SELECT fail_count FROM Cards WHERE c_id = %s", (card_id,))
-        before = cursor.fetchone()["fail_count"]
+        before_fail_count = cursor.fetchone()["fail_count"]
 
     data = {"card_id": card_id, "grade": Grade.Again, "review_duration": 2000}
     response = client.post(
@@ -183,11 +182,15 @@ def test_log_review_again_increments_fail_count(client, auth_headers):
     )
     assert response.status_code == 201
 
+    after = {}
     with get_db_cursor() as cursor:
-        cursor.execute("SELECT fail_count FROM Cards WHERE c_id = %s", (card_id,))
-        after = cursor.fetchone()["fail_count"]
+        cursor.execute("SELECT fail_count, successful_reps FROM Cards WHERE c_id = %s", (card_id,))
+        row = cursor.fetchone()
+        after["fail_count"] = row["fail_count"]
+        after["successful_reps"] = row["successful_reps"]
 
-    assert after == before + 1
+    assert after["fail_count"] == before_fail_count + 1
+    assert after["successful_reps"] == 0
 
 def test_log_review_easy_increments_success_count(client, auth_headers):
     """Test that grading Easy (4) increments the card's successful_reps."""
