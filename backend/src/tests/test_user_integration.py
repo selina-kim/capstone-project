@@ -20,9 +20,9 @@ Run with coverage:
 
 import pytest
 import json
+from services.fsrs.optimizer import DEFAULT_PARAMETERS
 
 pytestmark = pytest.mark.integration
-
 
 # ==================== Get User Profile Tests ====================
 
@@ -40,6 +40,7 @@ def test_get_current_user_success(client, auth_headers):
     assert result["email"] == "test@example.com"
     assert result["display_name"] == "Test User"
     assert result["timezone"] == "America/Toronto"
+    assert result["fsrs_parameters"] == list(DEFAULT_PARAMETERS)
     assert "new_cards_per_day" in result
     assert "desired_retention" in result
 
@@ -155,11 +156,10 @@ def test_update_auto_optimize(client, auth_headers):
     result = json.loads(response.data)
     assert result["user"]["auto_optimize"] is False
 
-
-def test_update_fsrs_parameters(client, auth_headers):
-    """Test updating FSRS parameters."""
+def test_update_auto_optimize_true(client, auth_headers):
+    """Test updating auto-optimize flag."""
     update_data = {
-        "fsrs_parameters": [1.0, 2.0, 3.0, 4.0]
+        "auto_optimize": True
     }
     
     response = client.patch(
@@ -169,9 +169,16 @@ def test_update_fsrs_parameters(client, auth_headers):
         headers=auth_headers
     )
     
+    print(response.status_code)
+    print(response.get_data(as_text=True))
+
     assert response.status_code == 200
     result = json.loads(response.data)
-    assert result["user"]["fsrs_parameters"] == [1.0, 2.0, 3.0, 4.0]
+    assert result["user"]["auto_optimize"] is True
+    # should run the optimization immediately since the user has already reviewed enough cards in the test setup, 
+    # so parameters should be updated from the default and reviews_since_last_optimize should be reset to 0
+    assert result["user"]["fsrs_parameters"] != list(DEFAULT_PARAMETERS)  
+    assert result["user"]["reviews_since_last_optimize"] == 0
 
 
 def test_update_multiple_fields(client, auth_headers):
@@ -285,43 +292,6 @@ def test_update_invalid_auto_optimize_type(client, auth_headers):
     result = json.loads(response.data)
     assert "boolean" in result["error"]
 
-
-def test_update_invalid_fsrs_parameters(client, auth_headers):
-    """Test updating with invalid FSRS parameters."""
-    update_data = {
-        "fsrs_parameters": "not an array"
-    }
-    
-    response = client.patch(
-        "/users/me",
-        data=json.dumps(update_data),
-        content_type='application/json',
-        headers=auth_headers
-    )
-    
-    assert response.status_code == 400
-    result = json.loads(response.data)
-    assert "array" in result["error"]
-
-
-def test_update_fsrs_parameters_invalid_elements(client, auth_headers):
-    """Test updating with FSRS parameters containing non-numeric values."""
-    update_data = {
-        "fsrs_parameters": [1.0, "invalid", 3.0]
-    }
-    
-    response = client.patch(
-        "/users/me",
-        data=json.dumps(update_data),
-        content_type='application/json',
-        headers=auth_headers
-    )
-    
-    assert response.status_code == 400
-    result = json.loads(response.data)
-    assert "numbers" in result["error"]
-
-
 def test_update_no_data_provided(client, auth_headers):
     """Test update with no data provided."""
     response = client.patch(
@@ -351,6 +321,69 @@ def test_update_without_auth(client):
     assert response.status_code == 401
 
 
+# ==================== Reset FSRS Params Tests ====================
+
+def test_reset_fsrs_params_true(client, auth_headers):
+    """Test that reset_fsrs_params=True resets the user's FSRS parameters."""
+
+    update_data = {
+        "reset_fsrs_params": True,
+        "display_name": "Reset Test User"
+    }
+
+    response = client.patch(
+        "/users/me",
+        data=json.dumps(update_data),
+        content_type='application/json',
+        headers=auth_headers
+    )
+
+    assert response.status_code == 200
+    result = json.loads(response.data)
+    assert result["user"]["display_name"] == "Reset Test User"
+    # When we set up the test user, we set fsrs_parameters to the default parameters
+    # so resetting this should set it to None in the DB (which the scheduler will interpret as default params anayways)
+    assert result["user"]["fsrs_parameters"] is None
+    # reset_fsrs_params is a control flag and must not appear in the returned user object
+    assert 'reset_fsrs_params' not in result["user"]
+
+
+def test_reset_fsrs_params_false(client, auth_headers):
+    """Test that reset_fsrs_params=False skips the reset and proceeds with the normal update."""
+    update_data = {
+        "reset_fsrs_params": False,
+        "display_name": "No Reset User"
+    }
+
+    response = client.patch(
+        "/users/me",
+        data=json.dumps(update_data),
+        content_type='application/json',
+        headers=auth_headers
+    )
+
+    assert response.status_code == 200
+    result = json.loads(response.data)
+    assert result["user"]["display_name"] == "No Reset User"
+    assert 'reset_fsrs_params' not in result["user"]
+
+def test_reset_fsrs_params_invalid_value(client, auth_headers):
+    """Test that providing an invalid value for reset_fsrs_params results in a validation error."""
+    update_data = {
+        "reset_fsrs_params": "not a boolean",
+        "display_name": "Clean Response User"
+    }
+
+    response = client.patch(
+        "/users/me",
+        data=json.dumps(update_data),
+        content_type='application/json',
+        headers=auth_headers
+    )
+
+    assert response.status_code == 400
+    result = json.loads(response.data)
+    assert "reset_fsrs_params must be a boolean" in result["error"]
 # ==================== Delete User Tests ====================
 
 

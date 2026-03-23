@@ -5,7 +5,11 @@ from flask_jwt_extended import create_access_token
 from db import get_db_cursor
 from minio import Minio
 import psycopg2
+import pandas as pd
+from datetime import datetime
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+from psycopg2.extras import execute_values
+from services.fsrs.scheduler import DEFAULT_PARAMETERS
 
 """
 Run all unit tests with:
@@ -98,12 +102,13 @@ def db_setup(db_schema):
         cursor.execute("DELETE FROM Cards WHERE d_id IN (SELECT d_id FROM Decks WHERE u_id = 'test-user-id')")
         cursor.execute("DELETE FROM Decks WHERE u_id = 'test-user-id'")
         cursor.execute("DELETE FROM Users WHERE u_id = 'test-user-id'")
-        
+        cursor.execute("DELETE FROM Review_Logs WHERE c_id IN (SELECT c_id FROM Cards WHERE d_id IN (SELECT d_id FROM Decks WHERE u_id = 'test-user-id'))")
+
         # Insert test user
         cursor.execute("""
-            INSERT INTO Users (u_id, email, display_name, timezone)
-            VALUES ('test-user-id', 'test@example.com', 'Test User', 'America/Toronto')
-        """)
+            INSERT INTO Users (u_id, email, display_name, timezone, fsrs_parameters, total_reviews, reviews_since_last_optimize)
+            VALUES ('test-user-id', 'test@example.com', 'Test User', 'America/Toronto', %s, 600, 600)
+        """, (list(DEFAULT_PARAMETERS),))
         
         # Reset the decks sequence to ensure we get d_id = 1  
         cursor.execute("SELECT setval('decks_d_id_seq', 1, false)")
@@ -122,6 +127,48 @@ def db_setup(db_schema):
             INSERT INTO Cards (d_id, word, translation, word_roman)
             VALUES (%s, 'hola', 'hello', 'oh-lah')
         """, (test_deck_id,))
+
+        csv_path = os.path.join(os.path.dirname(__file__), 'sample_data', 'sample_logs.csv')
+        df = pd.read_csv(csv_path)
+        unique_card_ids = list(df['card_id'].unique())
+
+        # Batch-insert one card per unique CSV card_id and collect the generated c_ids.
+        # PostgreSQL RETURNING preserves VALUES insertion order, giving us the mapping.
+        
+        # rows must be tuples, and we need to insert the same number of rows as unique card_ids in the CSV to maintain the mapping logic
+        card_rows = [
+            (test_deck_id, f'word_{i + 1}', f'translation_{i + 1}')
+            for i in range(len(unique_card_ids))
+        ]
+        # execute_values is more efficient for bulk inserts and allows us to get all generated c_ids in one query, which is crucial for mapping the review logs correctly
+        inserted_cards = execute_values(
+            cursor,
+            "INSERT INTO Cards (d_id, word, translation) VALUES %s RETURNING c_id",
+            card_rows,
+            fetch=True,
+        )
+
+        # Create a mapping from original card_id in CSV to the inserted c_id in the database, based on the order of unique card_ids and the returned inserted_cards
+        card_id_map = {
+            original_id: inserted_cards[i]['c_id']
+            for i, original_id in enumerate(unique_card_ids)
+        }
+
+        # Batch-insert all review logs
+        log_rows = [
+            (
+                card_id_map[row['card_id']],
+                int(row['grade']),
+                datetime.fromisoformat(row['review_datetime']),
+                int(row['review_duration']),
+            )
+            for _, row in df.iterrows()
+        ]
+        execute_values(
+            cursor,
+            "INSERT INTO Review_Logs (c_id, grade, review_date, review_duration) VALUES %s",
+            log_rows,
+        )
     
     yield test_deck_id
     
@@ -130,6 +177,7 @@ def db_setup(db_schema):
         cursor.execute("DELETE FROM Cards WHERE d_id IN (SELECT d_id FROM Decks WHERE u_id = 'test-user-id')")
         cursor.execute("DELETE FROM Decks WHERE u_id = 'test-user-id'")
         cursor.execute("DELETE FROM Users WHERE u_id = 'test-user-id'")
+        cursor.execute("DELETE FROM Review_Logs WHERE c_id IN (SELECT c_id FROM Cards WHERE d_id IN (SELECT d_id FROM Decks WHERE u_id = 'test-user-id'))")
     
     # Clean up MinIO test files
     cleanup_minio_test_data()
@@ -194,4 +242,3 @@ def mock_tts_for_integration(monkeypatch):
     from services.tts_service import TTSService
     monkeypatch.setattr(TTSService, 'generate_speech', mock_generate_speech)
     print("TTS mocked for integration test")
-

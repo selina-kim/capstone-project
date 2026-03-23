@@ -130,18 +130,6 @@ class TestUpdateUser:
             
             assert result["desired_retention"] == 0.85
     
-    def test_update_fsrs_parameters(self, user_service, sample_user_data):
-        """Test updating FSRS parameters."""
-        updated_data = sample_user_data.copy()
-        updated_data["fsrs_parameters"] = [1.0, 2.0, 3.0]
-        
-        with patch("services.user_service.get_db_cursor") as mock_cursor:
-            mock_cursor.return_value.__enter__.return_value.fetchone.return_value = updated_data
-            
-            result = user_service.update_user("test-user-123", {"fsrs_parameters": [1.0, 2.0, 3.0]})
-            
-            assert result["fsrs_parameters"] == [1.0, 2.0, 3.0]
-    
     def test_update_auto_optimize(self, user_service, sample_user_data):
         """Test updating auto-optimize flag."""
         updated_data = sample_user_data.copy()
@@ -189,6 +177,7 @@ class TestUpdateUser:
             
             assert "User not found" in str(exc_info.value)
 
+    # testing updating FSRS parameters with reset_fsrs_params flag will be tested in the unit tests for fsrs_service
 
 class TestDeleteUser:
     """Tests for delete_user method."""

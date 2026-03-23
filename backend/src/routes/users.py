@@ -9,11 +9,15 @@ from services.user_service import (
     UserNotFoundError,
     DatabaseError
 )
+from services.fsrs_service import FsrsService
+from services.fsrs.optimizer import mini_batch_size
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 users_bp = Blueprint("users", __name__)
 user_service = UserService()
+fsrs_service = FsrsService()
 
+MIN_OPTIMIZATION_CARDS_THRESHOLD = mini_batch_size
 
 def json_response(data, status=200, ensure_ascii=False):
     """Create a JSON response with proper encoding."""
@@ -69,11 +73,11 @@ def update_current_user():
     - timezone: User's timezone (e.g., 'America/Toronto')
     - new_cards_per_day: Number of new cards per day (integer)
     - desired_retention: Desired retention rate (0.0-1.0)
-    - fsrs_parameters: Array of FSRS parameters (array of floats)
     - auto_optimize: Enable/disable auto-optimization (boolean)
     - num_reviews_per_optimize: Number of reviews before optimization (positive integer)
     - total_reviews: Total review count (non-negative integer)
     - reviews_since_last_optimize: Reviews since last optimization (non-negative integer)
+    - reset_fsrs_params: resets the fsrs's optimization params to the default params
     
     Returns: Updated user profile
     """
@@ -141,18 +145,35 @@ def update_current_user():
         except (ValueError, TypeError):
             return error_response("reviews_since_last_optimize must be an integer", status=400)
     
-    if 'fsrs_parameters' in data:
-        if data['fsrs_parameters'] is not None:
-            if not isinstance(data['fsrs_parameters'], list):
-                return error_response("fsrs_parameters must be an array", status=400)
-            try:
-                # Validate all elements are numbers
-                data['fsrs_parameters'] = [float(x) for x in data['fsrs_parameters']]
-            except (ValueError, TypeError):
-                return error_response("fsrs_parameters must contain only numbers", status=400)
+    if 'reset_fsrs_params' in data:
+        try:
+            if not isinstance(data['reset_fsrs_params'], bool):
+                return error_response("reset_fsrs_params must be a boolean", status=400)
+            
+            if data['reset_fsrs_params'] == True:
+                fsrs_service.reset_optimization_params(user_id)
+        except DatabaseError as e:
+            return error_response(f"Database error: {str(e)}", status=500)
+        
+        # make sure to remove reset_fsrs_params from data before trying to pass it to the update_user func
+        data.pop('reset_fsrs_params', None)
     
     try:
         updated_user = user_service.update_user(user_id, data)
+        
+        if 'auto_optimize' in data and fsrs_service.should_optimize(user_id):
+            # check that they have reviewed enough cards since the last optimization
+            # and that their total reviewed cards meets the min threshold for optimization mini_batch_size
+            if fsrs_service.cards_reviewed_since_last_optimize(user_id) >= fsrs_service.num_reviews_per_optimize(user_id) and fsrs_service.total_cards_reviewed(user_id) >= MIN_OPTIMIZATION_CARDS_THRESHOLD:
+                new_params = fsrs_service.optimize_parameters(user_id)
+                fsrs_service.save_parameters(user_id, new_params)
+                fsrs_service.reset_review_counts(user_id)  
+                # reschedule all cards based on the new parameters
+                fsrs_service.reschedule_all_cards(user_id)
+
+        # Retrieve the fresh user object to ensure we return the latest state 
+        # (including any side effects like optimized parameters)
+        updated_user = user_service.get_user(user_id)
         
         return json_response({
             "message": "User profile updated successfully",
