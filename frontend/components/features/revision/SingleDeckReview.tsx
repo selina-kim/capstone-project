@@ -164,7 +164,12 @@ export const SingleDeckReview = ({
               onPress={handleKeepStudying}
               Icon={<RepeatIcon />}
             />
-            <CButton variant="secondary" label="Go Home" onPress={onGoHome} Icon={<HomeIcon width={3.2} stroke={COLORS.text.primary} />}/>
+            <CButton
+              variant="secondary"
+              label="Go Home"
+              onPress={onGoHome}
+              Icon={<HomeIcon width={3.2} stroke={COLORS.text.primary} />}
+            />
           </View>
         </View>
       )}
