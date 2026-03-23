@@ -48,6 +48,9 @@ export const CreateNewCardModal = ({
   ...modeProps
 }: CreateNewCardModalProps) => {
   const isEditMode = mode === "edit";
+  const editCard = isEditMode
+    ? (modeProps as EditCardModalProps).card
+    : undefined;
   const [sourceWord, setSourceWord] = useState("");
   const [targetWord, setTargetWord] = useState("");
   const [sourceExample, setSourceExample] = useState("");
@@ -341,9 +344,7 @@ export const CreateNewCardModal = ({
   };
 
   useEffect(() => {
-    if (isOpen && isEditMode) {
-      const editCard = (modeProps as EditCardModalProps).card;
-
+    if (isOpen && isEditMode && editCard) {
       setSourceWord(editCard.translation || "");
       setTargetWord(editCard.word || "");
       setSourceExample(editCard.trans_example || "");
@@ -373,7 +374,7 @@ export const CreateNewCardModal = ({
       setIsGeneratingExample(false);
       setIsGeneratingImage(false);
     }
-  }, [isOpen, isEditMode, modeProps]);
+  }, [isOpen, isEditMode, editCard]);
 
   return (
     <Modal
