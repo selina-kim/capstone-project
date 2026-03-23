@@ -22,15 +22,16 @@ export const SingleDeckReview = ({
   const [cards, setCards] = useState<Card[]>([]);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [isFrontSide, setIsFrontSide] = useState(true);
+  const [hasRevealedBackOnce, setHasRevealedBackOnce] = useState(false);
   const [isReviewComplete, setIsReviewComplete] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>();
 
   const difficultyOptions = [
-    { label: "Again", eta: "<1m", borderColor: "#F2A5A1" },
-    { label: "Hard", eta: "<6m", borderColor: "#F1B35E" },
-    { label: "Good", eta: "<10m", borderColor: "#ADD85D" },
-    { label: "Easy", eta: "4d", borderColor: "#7CD6A0" },
+    { label: "Again", borderColor: "#F2A5A1" },
+    { label: "Hard", borderColor: "#F1B35E" },
+    { label: "Good", borderColor: "#ADD85D" },
+    { label: "Easy", borderColor: "#7CD6A0" },
   ];
 
   const getCardsToReview = useCallback(async () => {
@@ -48,6 +49,7 @@ export const SingleDeckReview = ({
       setCards(data.cards);
       setCurrentCardIndex(0);
       setIsFrontSide(true);
+      setHasRevealedBackOnce(false);
       setIsReviewComplete(false);
     } finally {
       setIsLoading(false);
@@ -63,13 +65,13 @@ export const SingleDeckReview = ({
   const progress = totalCards === 0 ? 0 : (currentCardIndex + 1) / totalCards;
 
   const handleCardPress = () => {
-    if (!isFrontSide) {
+    if (isFrontSide) {
+      setIsFrontSide(false);
+      setHasRevealedBackOnce(true);
       return;
     }
 
-    if (isFrontSide) {
-      setIsFrontSide(false);
-    }
+    setIsFrontSide(true);
   };
 
   const handleSelectDifficulty = () => {
@@ -80,6 +82,7 @@ export const SingleDeckReview = ({
 
     setCurrentCardIndex((prev) => prev + 1);
     setIsFrontSide(true);
+    setHasRevealedBackOnce(false);
   };
 
   const handleKeepStudying = () => {
@@ -254,12 +257,12 @@ export const SingleDeckReview = ({
                   color: COLORS.text.secondary,
                 }}
               >
-                {isFrontSide ? "Tap to flip card" : "Select a difficulty"}
+                Tap to flip card
               </CText>
             </View>
           </Pressable>
 
-          {!isFrontSide && (
+          {hasRevealedBackOnce && (
             <View
               style={{
                 width: "100%",
@@ -282,13 +285,11 @@ export const SingleDeckReview = ({
                     justifyContent: "center",
                     rowGap: 4,
                     backgroundColor: COLORS.background.primary,
+                    height: 80,
                   }}
                 >
                   <CText style={{ fontSize: 18, lineHeight: 24 }}>
                     {option.label}
-                  </CText>
-                  <CText style={{ color: COLORS.text.secondary }}>
-                    {option.eta}
                   </CText>
                 </Pressable>
               ))}
