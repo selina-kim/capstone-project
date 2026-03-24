@@ -118,7 +118,7 @@ export default function Revision() {
           key={`revision_deck_preview_${deck.d_id}`}
           deckName={deck.deck_name}
           language={getLanguageName(deck.word_lang)}
-          cardsDue={deck.due_count}
+          cardsDue={deck.due_cards_count}
           onReview={() => {
             setFocusedDeck({
               d_id: deck.d_id,

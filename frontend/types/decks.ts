@@ -16,7 +16,7 @@ export interface DueDeck {
   word_lang: string;
   trans_lang: string;
   last_reviewed: string | null;
-  due_count: number;
+  due_cards_count: number;
   total_cards: number;
 }
 
