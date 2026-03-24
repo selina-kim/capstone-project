@@ -266,11 +266,10 @@ class TestFsrsServiceUnit:
             FsrsService.update_card_fail_success_count(1, Grade.Good)
 
     # --- review_card tests ---
-    @patch('services.fsrs_service.FsrsService.update_deck_due_cards')
     @patch('services.fsrs_service.get_db_cursor')
     @patch('services.fsrs_service.Scheduler')
     @patch('services.fsrs_service.Card')
-    def test_review_card(self, mock_card_cls, mock_scheduler_cls, mock_get_db_cursor, mock_update_deck):
+    def test_review_card(self, mock_card_cls, mock_scheduler_cls, mock_get_db_cursor):
         """Test reviewing a card."""
         mock_cursor = MagicMock()
         mock_get_db_cursor.return_value.__enter__.return_value = mock_cursor
@@ -314,7 +313,6 @@ class TestFsrsServiceUnit:
         # Assert: SELECT card info, UPDATE Cards
         assert mock_cursor.execute.call_count == 2
         assert "UPDATE Cards" in mock_cursor.execute.call_args_list[1][0][0]
-        mock_update_deck.assert_called_once_with("test-user-id")
         assert updated_fields["learning_state"] == int(updated_card_mock.learning_state)
         assert updated_fields["step"] == updated_card_mock.step
         assert updated_fields["difficulty"] == float(updated_card_mock.difficulty)

@@ -319,8 +319,6 @@ class FsrsService:
                     ),
                 )
 
-                # update the due cards count for the deck and user
-                FsrsService.update_deck_due_cards(user_card_info["u_id"])
 
                 return updated_fields
 

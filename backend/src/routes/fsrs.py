@@ -108,6 +108,9 @@ def end_review():
     optimized = False
 
     try:
+        # update the due cards count for the user at the end of the review session to ensure it's updated after leaving the review page
+        fsrs_service.update_deck_due_cards(user_id) 
+        
         # Update user's review counts for optimization tracking
         fsrs_service.increment_review_counts(user_id, total_cards_reviewed)
 

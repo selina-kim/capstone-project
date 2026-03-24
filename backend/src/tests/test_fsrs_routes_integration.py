@@ -502,6 +502,7 @@ def test_end_review_increments_total_reviews(client, auth_headers, monkeypatch):
     # the second must not (so the counter increments normally to 7).
     # An iterator gives True once then False, regardless of DB state.
     should_optimize_seq = iter([True, False])
+    monkeypatch.setattr(fsrs_service, 'update_deck_due_cards', lambda *a, **kw: None)
     monkeypatch.setattr(fsrs_service, 'should_optimize', lambda *a, **kw: next(should_optimize_seq))
     monkeypatch.setattr(fsrs_service, 'cards_reviewed_since_last_optimize', lambda *a, **kw: 9999)
     monkeypatch.setattr(fsrs_service, 'num_reviews_per_optimize', lambda *a, **kw: 100)
@@ -580,6 +581,7 @@ def test_end_review_database_error(client, auth_headers, monkeypatch):
     def raise_db_error(*args, **kwargs):
         raise DatabaseError("simulated db failure")
 
+    monkeypatch.setattr(fsrs_service, 'update_deck_due_cards', lambda *a, **kw: None)
     monkeypatch.setattr(fsrs_service, 'increment_review_counts', raise_db_error)
 
     data = {"total_cards_reviewed": 5}
@@ -597,6 +599,7 @@ def test_end_review_triggers_optimization(client, auth_headers, monkeypatch):
     """Test that optimization runs, parameters_optimized is True, and new params are saved to DB."""
     from routes.fsrs import fsrs_service
 
+    monkeypatch.setattr(fsrs_service, 'update_deck_due_cards', lambda *a, **kw: None)
     monkeypatch.setattr(fsrs_service, 'increment_review_counts', lambda *a, **kw: None)
     monkeypatch.setattr(fsrs_service, 'should_optimize', lambda *a, **kw: True)
     monkeypatch.setattr(fsrs_service, 'cards_reviewed_since_last_optimize', lambda *a, **kw: 9999)
