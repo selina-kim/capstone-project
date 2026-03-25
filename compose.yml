@@ -1,15 +1,5 @@
 services:
-  # TODO: do we want to have frontend use Docker?
-  # frontend:
-  #     build: ./frontend
-  #     ports:
-  #       - "443:8043"
-  #     networks:
-  #       - back-tier
-  #       - front-tier
-  #     restart: unless-stopped
-
-# --- Backend Service ---
+  # --- Backend Service ---
   backend:
     build: ./backend
     env_file: .env
@@ -26,8 +16,8 @@ services:
     # below 4 configs allows file changes to be applied without rebuilding the image
     volumes:
       - ./backend:/app
-      - /app/.venv  # preserve the container's .venv
-      - ./database:/database:ro  # mount database folder for tests (read-only)
+      - /app/.venv # preserve the container's .venv
+      - ./database:/database:ro # mount database folder for tests (read-only)
     environment:
       FLASK_APP: main:app
       FLASK_ENV: development
@@ -35,7 +25,7 @@ services:
       DEEPL_API_KEY: ${DEEPL_API_KEY}
       PYTHONPATH: /app/src
       COQUI_TOS_AGREED: "1"
-      
+
       # --- Google OAuth ---
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
@@ -48,7 +38,7 @@ services:
       MINIO_ACCESS_KEY: "${MINIO_ROOT_USER}"
       MINIO_SECRET_KEY: "${MINIO_ROOT_PASSWORD}"
       MINIO_BUCKET_NAME: "languine-media"
-    
+
     working_dir: /app
     command: flask run --host=0.0.0.0 --reload
 
@@ -79,9 +69,9 @@ services:
       timeout: 5s
       retries: 5
 
-# --- MinIO Service (Image storage) ---
+  # --- MinIO Service (Image storage) ---
   minio:
-    image: minio/minio
+    image: minio/minio:RELEASE.2023-09-30T07-02-29Z
     container_name: minio
     command: server /data --console-address ":9001"
     networks:
@@ -97,9 +87,9 @@ services:
       - "9001:9001"
     restart: unless-stopped
 
-# --- Cloudflared Tunnel Service ---
-  cloudflared:
-    profiles: ["production"]  # Only runs when profile is specified: "docker compose --profile production up"
+  # --- Cloudflared Tunnel Service ---
+  cloudflare:
+    profiles: ["production"] # Only runs when profile is specified: "docker compose --profile production up"
     image: cloudflare/cloudflared:latest
     container_name: cloudflared
     # This uses a named tunnel with a token created in the Cloudflare dashboard
@@ -110,7 +100,6 @@ services:
       - back-tier
     restart: unless-stopped
     # no ports needed as traffic is routed via Cloudflare
-
 
 networks:
   front-tier: {}
