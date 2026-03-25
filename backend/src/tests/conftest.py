@@ -94,6 +94,70 @@ def db_schema():
     # Final MinIO cleanup
     cleanup_minio_test_data()
 
+@pytest.fixture(scope="session")
+def system_decks(db_schema):
+    """Seed the system user and built-in reference decks used by copy-on-signup logic.
+
+    Session-scoped so the data is inserted once and persists across all tests.
+    db_setup (function-scoped) only touches 'test-user-id' data and leaves this intact.
+    """
+    with get_db_cursor(commit=True) as cursor:
+        cursor.execute("""
+            INSERT INTO Users (u_id, email, display_name, timezone)
+            VALUES ('system', 'system@languine.app', 'Languine', 'UTC')
+            ON CONFLICT (u_id) DO NOTHING
+        """)
+        cursor.execute("""
+            INSERT INTO Decks (u_id, deck_name, word_lang, trans_lang, description, is_public)
+            VALUES
+                ('system', 'Mandarin Chinese Beginner', 'Chinese (Mandarin)', 'English',
+                 'Essential beginner vocabulary for Mandarin Chinese', true),
+                ('system', 'Korean Beginner', 'Korean', 'English',
+                 'Essential beginner vocabulary for Korean', true),
+                ('system', 'French Beginner', 'French', 'English',
+                 'Essential beginner vocabulary for French', true), 
+                ('system', 'Japanese Beginner', 'Japanese', 'English',
+                 'Essential beginner vocabulary for Japanese', true)
+            ON CONFLICT (u_id, deck_name) DO NOTHING
+        """)
+        # Insert 3 sample cards per deck (12 total) — enough to verify copying works
+        cursor.execute("""
+            WITH deck_cards(deck_name, word, translation, word_example, trans_example) AS (VALUES
+                ('Mandarin Chinese Beginner', '你好',  'hello',
+                 '你好！很高兴见到你。',           'Hello! I''m happy to see you.'),
+                ('Mandarin Chinese Beginner', '您好',  'hello (polite)',
+                 '您好，请问这里是图书馆吗？',     'Hello, may I ask if this is the library?'),
+                ('Mandarin Chinese Beginner', '早上好', 'good morning',
+                 '早上好！你今天睡得好吗？',       'Good morning! Did you sleep well today?'),
+                ('Korean Beginner', '안녕하세요', 'hello',
+                 '안녕하세요 저는 한국어를 배우고 있는 학생입니다.', 'Hello I am a student learning Korean.'),
+                ('Korean Beginner', '감사합니다', 'thank you',
+                 '도와주셔서 정말 감사합니다.',     'Thank you very much for helping me.'),
+                ('Korean Beginner', '죄송합니다', 'sorry',
+                 '늦게 와서 죄송합니다 다음에는 더 일찍 오겠습니다.', 'Sorry for arriving late I will come earlier next time.'),
+                ('Japanese Beginner', '一つ', 'one (thing)',
+                 'それを一つください。',           'Please give me one of those.'),
+                ('Japanese Beginner', '二つ', 'two (things)',
+                 'ソフトクリームを二つください。', 'Please give me two ice cream cones.'),
+                ('Japanese Beginner', '円', 'yen',
+                 'カレーライスは700円です。',       'The curry and rice is 700 yen.'),
+                ('French Beginner', 'je', 'I',   NULL, NULL),
+                ('French Beginner', 'tu', 'you (informal)', NULL, NULL),
+                ('French Beginner', 'il', 'he',  NULL, NULL)
+            )
+            INSERT INTO Cards (d_id, word, translation, word_example, trans_example)
+            SELECT d.d_id, dc.word, dc.translation, dc.word_example, dc.trans_example
+            FROM deck_cards dc
+            JOIN Decks d ON d.deck_name = dc.deck_name AND d.u_id = 'system'
+        """)
+
+    yield
+
+    # Cascade delete removes system decks and cards too
+    with get_db_cursor(commit=True) as cursor:
+        cursor.execute("DELETE FROM Users WHERE u_id = 'system'")
+
+
 @pytest.fixture
 def db_setup(db_schema):
     """Set up test data before each test."""
@@ -242,3 +306,36 @@ def mock_tts_for_integration(monkeypatch):
     from services.tts_service import TTSService
     monkeypatch.setattr(TTSService, 'generate_speech', mock_generate_speech)
     print("TTS mocked for integration test")
+
+
+@pytest.fixture(scope="module")
+def seeded_db(db_schema):
+    """Execute 02_seed_builtin_decks.sql once for this module, then clean up.
+
+    NOTE: The COPY commands in the seed SQL read from /docker-entrypoint-initdb.d/
+          which is only mounted in Docker. This fixture must be used inside the container.
+    """
+    if os.path.exists("/database/init/02_seed_builtin_decks.sql"):
+        sql_path = "/database/init/02_seed_builtin_decks.sql"
+    else:
+        sql_path = os.path.join(
+            os.path.dirname(__file__),
+            "..", "..", "..", "database", "init", "02_seed_builtin_decks.sql",
+        )
+
+    with open(sql_path) as f:
+        sql = f.read()
+
+    conn = psycopg2.connect(os.getenv("DATABASE_URL"))
+    conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+    cur = conn.cursor()
+    try:
+        cur.execute(sql)
+    finally:
+        cur.close()
+        conn.close()
+
+    yield
+
+    with get_db_cursor(commit=True) as cur:
+        cur.execute("DELETE FROM Users WHERE u_id = 'system'")

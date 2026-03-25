@@ -17,10 +17,15 @@ Test coverage:
 - Actual JWT token generation and validation
 - Real token refresh with database persistence
 """
+from time import time
+
 import pytest
 import os
 import json
 import base64
+from flask_jwt_extended import create_access_token
+from main import create_app
+from db import get_db_cursor
 
 # Mark all tests in this file as integration tests
 pytestmark = pytest.mark.integration
@@ -41,6 +46,13 @@ def skip_if_no_google_token():
     id_token = os.getenv("GOOGLE_TEST_ID_TOKEN")
     if not id_token:
         pytest.skip("GOOGLE_TEST_ID_TOKEN not set - skipping integration test")
+
+    try:
+        exp = _decode_google_token_payload(id_token).get("exp", 0)
+        if exp < time():
+            pytest.skip("GOOGLE_TEST_ID_TOKEN has expired - refresh the token to run these tests")
+    except Exception:
+        pytest.skip("GOOGLE_TEST_ID_TOKEN is malformed - skipping integration test")
 
 @pytest.fixture
 def skip_if_no_google_config():
@@ -277,4 +289,195 @@ class TestAuthFlowIntegration:
             headers={"Authorization": f"Bearer {new_access_token}"}
         )
         assert logout_response.status_code == 200
-        
+
+
+# ---------------------------------------------------------------------------
+# Built-in deck copy-on-signup integration tests
+# ---------------------------------------------------------------------------
+
+_BUILTIN_TEST_USER_ID = "builtin-decks-test-user"
+
+_EXPECTED_DECK_NAMES = {
+    "Mandarin Chinese Beginner",
+    "Korean Beginner",
+    "French Beginner",
+    "Japanese Beginner",
+}
+
+# Number of cards seeded per system deck in the system_decks conftest fixture
+_CARDS_PER_DECK = 3
+
+
+def _fake_builtin_token(*args, **kwargs):
+    """Return fake Google token payload for _BUILTIN_TEST_USER_ID."""
+    return {
+        "sub": _BUILTIN_TEST_USER_ID,
+        "email": "builtin-test@example.com",
+        "name": "Builtin Test User",
+        "iss": "accounts.google.com",
+    }
+
+
+def _delete_builtin_test_user():
+    with get_db_cursor(commit=True) as cursor:
+        cursor.execute("DELETE FROM Users WHERE u_id = %s", (_BUILTIN_TEST_USER_ID,))
+
+
+@pytest.fixture
+def builtin_app(system_decks):
+    """App backed by the real DB with system decks already seeded."""
+    os.environ["GOOGLE_CLIENT_ID"] = os.getenv("GOOGLE_CLIENT_ID", "test-client-id")
+    os.environ["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "test-secret-key")
+    application = create_app()
+    application.config["TESTING"] = True
+    yield application
+
+
+@pytest.fixture
+def builtin_client(builtin_app):
+    return builtin_app.test_client()
+
+
+@pytest.fixture
+def builtin_auth_headers(builtin_app):
+    """JWT for _BUILTIN_TEST_USER_ID so deck endpoints can be called directly."""
+    with builtin_app.app_context():
+        token = create_access_token(identity=_BUILTIN_TEST_USER_ID)
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture(autouse=False)
+def builtin_cleanup():
+    """Remove the test user before and after each test that requests this fixture."""
+    _delete_builtin_test_user()
+    yield
+    _delete_builtin_test_user()
+
+
+def _do_signup(client, monkeypatch):
+    """POST /auth/google with a mocked token for _BUILTIN_TEST_USER_ID."""
+    monkeypatch.setattr(
+        "routes.auth.id_token.verify_oauth2_token",
+        _fake_builtin_token,
+    )
+    return client.post("/auth/google", json={"id_token": "fake-token"})
+
+
+class TestBuiltinDecksOnSignupIntegration:
+    """Verify that built-in decks are copied to a new user on first login.
+
+    Google token verification is mocked; all DB interactions use the real
+    test database seeded by the session-scoped system_decks fixture.
+    """
+
+    def test_signup_returns_200(self, builtin_client, builtin_cleanup, monkeypatch):
+        """POST /auth/google succeeds and returns user + tokens."""
+        response = _do_signup(builtin_client, monkeypatch)
+        assert response.status_code == 200
+        data = response.get_json()
+        assert "user" in data
+        assert "tokens" in data
+
+    def test_new_user_receives_four_decks(
+        self, builtin_client, builtin_auth_headers, builtin_cleanup, monkeypatch
+    ):
+        """Signing up copies exactly 4 built-in decks to the new user."""
+        _do_signup(builtin_client, monkeypatch)
+
+        response = builtin_client.get("/decks", headers=builtin_auth_headers)
+        assert response.status_code == 200
+        assert len(response.get_json()["decks"]) == 4
+
+    def test_new_user_deck_names_are_correct(
+        self, builtin_client, builtin_auth_headers, builtin_cleanup, monkeypatch
+    ):
+        """The copied deck names match the four expected system deck names."""
+        _do_signup(builtin_client, monkeypatch)
+
+        response = builtin_client.get("/decks", headers=builtin_auth_headers)
+        names = {d["deck_name"] for d in response.get_json()["decks"]}
+        assert names == _EXPECTED_DECK_NAMES
+
+    def test_new_user_decks_are_private(
+        self, builtin_client, builtin_auth_headers, builtin_cleanup, monkeypatch
+    ):
+        """Copied decks are private (is_public = false)."""
+        _do_signup(builtin_client, monkeypatch)
+
+        response = builtin_client.get("/decks", headers=builtin_auth_headers)
+        for deck in response.get_json()["decks"]:
+            assert deck["is_public"] is False, (
+                f"Expected {deck['deck_name']} to be private"
+            )
+
+    def test_each_deck_has_correct_card_count(
+        self, builtin_client, builtin_auth_headers, builtin_cleanup, monkeypatch
+    ):
+        """The card_count field in the deck list equals _CARDS_PER_DECK for each deck."""
+        _do_signup(builtin_client, monkeypatch)
+
+        response = builtin_client.get("/decks", headers=builtin_auth_headers)
+        for deck in response.get_json()["decks"]:
+            assert deck["card_count"] == _CARDS_PER_DECK, (
+                f"{deck['deck_name']}: expected {_CARDS_PER_DECK} cards, "
+                f"got {deck['card_count']}"
+            )
+
+    def test_deck_detail_endpoint_returns_cards(
+        self, builtin_client, builtin_auth_headers, builtin_cleanup, monkeypatch
+    ):
+        """GET /decks/<id> returns the correct number of cards for each deck."""
+        _do_signup(builtin_client, monkeypatch)
+
+        decks = builtin_client.get("/decks", headers=builtin_auth_headers).get_json()["decks"]
+        for deck in decks:
+            response = builtin_client.get(
+                f'/decks/{deck["d_id"]}', headers=builtin_auth_headers
+            )
+            assert response.status_code == 200
+            cards = response.get_json()["cards"]
+            assert len(cards) == _CARDS_PER_DECK, (
+                f"{deck['deck_name']}: expected {_CARDS_PER_DECK} cards in detail view"
+            )
+
+    def test_cards_are_immediately_reviewable(
+        self, builtin_client, builtin_auth_headers, builtin_cleanup, monkeypatch
+    ):
+        """Built-in cards have due_date = now, so at least one deck appears as due."""
+        _do_signup(builtin_client, monkeypatch)
+
+        response = builtin_client.get("/decks/due?limit=20", headers=builtin_auth_headers)
+        assert response.status_code == 200
+        assert len(response.get_json()["decks"]) > 0, (
+            "Expected at least one deck with due cards immediately after signup"
+        )
+
+    def test_second_signup_does_not_duplicate_decks(
+        self, builtin_client, builtin_auth_headers, builtin_cleanup, monkeypatch
+    ):
+        """A second login for the same user must not copy decks again."""
+        _do_signup(builtin_client, monkeypatch)
+        _do_signup(builtin_client, monkeypatch)
+
+        response = builtin_client.get("/decks", headers=builtin_auth_headers)
+        assert response.status_code == 200
+        assert len(response.get_json()["decks"]) == 4
+
+    def test_signup_response_contains_user_fields(
+        self, builtin_client, builtin_cleanup, monkeypatch
+    ):
+        """The signup response embeds the full user object with expected fields."""
+        response = _do_signup(builtin_client, monkeypatch)
+        user = response.get_json()["user"]
+
+        for field in (
+            "u_id", "email", "display_name", "timezone",
+            "new_cards_per_day", "desired_retention",
+            "auto_optimize", "num_reviews_per_optimize",
+            "total_reviews", "reviews_since_last_optimize",
+        ):
+            assert field in user, f"Missing field '{field}' in signup response"
+
+        assert user["u_id"] == _BUILTIN_TEST_USER_ID
+        assert user["email"] == "builtin-test@example.com"
+        assert user["display_name"] == "Builtin Test User"
