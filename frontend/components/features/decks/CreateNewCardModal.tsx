@@ -11,7 +11,7 @@ import { COLORS } from "@/constants/colors";
 import { useLanguageOptions } from "@/context/LanguageOptionsContext";
 import { Card } from "@/types/decks";
 import { useEffect, useState } from "react";
-import { Image, ScrollView, View } from "react-native";
+import { Image, View } from "react-native";
 import { getImageUrl } from "@/utils/imageUtils";
 
 interface BaseCardModalProps {
@@ -396,87 +396,88 @@ export const CreateNewCardModal = ({
       closeLabel="Cancel"
       isLoading={isSavingCard}
     >
-      <View style={{ height: 600 }}>
-        <ScrollView contentContainerStyle={{ gap: 14, paddingBottom: 50 }}>
-          <CTextInput
-            label="Word"
-            sublabel={sourceLanguageName.toUpperCase()}
-            value={sourceWord}
-            onChangeText={setSourceWord}
-            placeholder="e.g., Hello"
-          />
-          <CTextInput
-            sublabel={targetLanguageName.toUpperCase()}
-            value={targetWord}
-            onChangeText={setTargetWord}
-            placeholder="e.g., 안녕하세요"
-          />
-          {wordInputError && (
-            <CText variant="inputError">{wordInputError}</CText>
+      <View
+        style={{
+          gap: 14,
+          paddingBottom: 50,
+        }}
+      >
+        <CTextInput
+          label="Word"
+          sublabel={sourceLanguageName.toUpperCase()}
+          value={sourceWord}
+          onChangeText={setSourceWord}
+          placeholder="e.g., Hello"
+        />
+        <CTextInput
+          sublabel={targetLanguageName.toUpperCase()}
+          value={targetWord}
+          onChangeText={setTargetWord}
+          placeholder="e.g., 안녕하세요"
+        />
+        {wordInputError && <CText variant="inputError">{wordInputError}</CText>}
+        <CButton
+          variant="primary"
+          label={isTranslatingWord ? "Translating..." : "Auto-translate"}
+          Icon={<MagicWandIcon />}
+          disabled={isTranslatingWord}
+          onPress={handleAutoTranslate}
+        />
+        <CTextInput
+          label="Example"
+          sublabel={sourceLanguageName.toUpperCase()}
+          value={sourceExample}
+          onChangeText={setSourceExample}
+          placeholder="e.g., Hello my name is Tinu."
+        />
+        <CTextInput
+          sublabel={targetLanguageName.toUpperCase()}
+          value={targetExample}
+          onChangeText={setTargetExample}
+          placeholder="e.g., 안녕하세요! 제 이름은 티누예요."
+        />
+        {exampleError && <CText variant="inputError">{exampleError}</CText>}
+        <CButton
+          variant="primary"
+          label={isGeneratingExample ? "Generating..." : "Auto-generate"}
+          Icon={<MagicWandIcon />}
+          disabled={isGeneratingExample}
+          onPress={handleAutoGenerateExample}
+        />
+        <CText bold>Image</CText>
+        <View
+          style={{
+            width: "100%",
+            height: 200,
+            backgroundColor: COLORS.background.secondary,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            borderRadius: 10,
+            overflow: "hidden",
+          }}
+        >
+          {image ? (
+            <Image
+              key={image}
+              source={{ uri: getImageUrl(image) ?? image }}
+              style={{ width: "100%", height: "100%" }}
+              resizeMode="cover"
+            />
+          ) : (
+            <CText bold style={{ color: COLORS.text.tertiary }}>
+              No image
+            </CText>
           )}
-          <CButton
-            variant="primary"
-            label={isTranslatingWord ? "Translating..." : "Auto-translate"}
-            Icon={<MagicWandIcon />}
-            disabled={isTranslatingWord}
-            onPress={handleAutoTranslate}
-          />
-          <CTextInput
-            label="Example"
-            sublabel={sourceLanguageName.toUpperCase()}
-            value={sourceExample}
-            onChangeText={setSourceExample}
-            placeholder="e.g., Hello my name is Tinu."
-          />
-          <CTextInput
-            sublabel={targetLanguageName.toUpperCase()}
-            value={targetExample}
-            onChangeText={setTargetExample}
-            placeholder="e.g., 안녕하세요! 제 이름은 티누예요."
-          />
-          {exampleError && <CText variant="inputError">{exampleError}</CText>}
-          <CButton
-            variant="primary"
-            label={isGeneratingExample ? "Generating..." : "Auto-generate"}
-            Icon={<MagicWandIcon />}
-            disabled={isGeneratingExample}
-            onPress={handleAutoGenerateExample}
-          />
-          <CText bold>Image</CText>
-          <View
-            style={{
-              width: "100%",
-              height: 200,
-              backgroundColor: COLORS.background.secondary,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              borderRadius: 10,
-              overflow: "hidden",
-            }}
-          >
-            {image ? (
-              <Image
-                key={image}
-                source={{ uri: getImageUrl(image) ?? image }}
-                style={{ width: "100%", height: "100%" }}
-                resizeMode="cover"
-              />
-            ) : (
-              <CText bold style={{ color: COLORS.text.tertiary }}>
-                No image
-              </CText>
-            )}
-          </View>
-          {imageError && <CText variant="inputError">{imageError}</CText>}
-          <CButton
-            variant="primary"
-            label={isGeneratingImage ? "Generating..." : "Auto-generate"}
-            Icon={<MagicWandIcon />}
-            disabled={isGeneratingImage}
-            onPress={handleAutoGenerateImage}
-          />
-        </ScrollView>
+        </View>
+        {imageError && <CText variant="inputError">{imageError}</CText>}
+        <CButton
+          variant="primary"
+          label={isGeneratingImage ? "Generating..." : "Auto-generate"}
+          Icon={<MagicWandIcon />}
+          disabled={isGeneratingImage}
+          onPress={handleAutoGenerateImage}
+        />
       </View>
     </Modal>
   );

@@ -51,7 +51,13 @@ export const FAQ = ({ faqs }: FAQProps) => {
                   alignItems: "center",
                 }}
               >
-                <CText>{item.question}</CText>
+                <CText
+                  style={{
+                    flexShrink: 1,
+                  }}
+                >
+                  {item.question}
+                </CText>
                 <View
                   style={{
                     transform: [{ rotate: isOpen ? "180deg" : "0deg" }],
@@ -62,7 +68,6 @@ export const FAQ = ({ faqs }: FAQProps) => {
                   <ChevronDownIcon stroke={COLORS.text.primary} />
                 </View>
               </Pressable>
-
               {isOpen && (
                 <View style={{ marginTop: 10 }}>
                   <CText style={{ color: COLORS.text.secondary }}>

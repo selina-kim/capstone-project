@@ -1,6 +1,11 @@
 import { COLORS } from "@/constants/colors";
 import { ReactNode } from "react";
-import { ActivityIndicator, Modal as RNModal, View } from "react-native";
+import {
+  ActivityIndicator,
+  Modal as RNModal,
+  ScrollView,
+  View,
+} from "react-native";
 import { ButtonVariantType, CButton } from "./CButton";
 import { CText } from "./CText";
 
@@ -65,8 +70,9 @@ export const Modal = ({
             backgroundColor: COLORS.background.primary,
             borderRadius: 12,
             padding: 20,
-            width: "80%",
+            width: "85%",
             maxWidth: 400,
+            maxHeight: "85%",
           }}
         >
           <View style={{ marginBottom: 16, rowGap: 4 }}>
@@ -90,7 +96,7 @@ export const Modal = ({
               </CText>
             )}
           </View>
-          <View style={{ zIndex: 10 }}>{children}</View>
+          <ScrollView style={{ zIndex: 10 }}>{children}</ScrollView>
           {Buttons}
           {isLoading && (
             <View

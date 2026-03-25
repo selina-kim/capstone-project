@@ -65,7 +65,7 @@ const SettingGroupItem = ({
             paddingVertical: 15,
           }}
         >
-          <View>
+          <View style={{ flexShrink: 1 }}>
             <CText bold>{label}</CText>
             {isEditable && (
               <CText style={{ color: COLORS.text.secondary }}>{value}</CText>

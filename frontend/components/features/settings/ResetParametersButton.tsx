@@ -14,7 +14,7 @@ export const ResetParametersButton = () => {
     <>
       <CButton
         variant="criticalSecondary"
-        label="Delete Account"
+        label="Reset Parameters"
         onPress={() => setIsDeleteModalVisible(true)}
         style={{
           marginVertical: 20,
