@@ -25,13 +25,19 @@ export const CreateOrImportDeckModal = ({
       <CButton
         variant="primary"
         label="Create New Deck"
-        onPress={onCreateDeck}
+        onPress={() => {
+          onCreateDeck();
+          onClose();
+        }}
         style={{ marginBottom: 10, marginTop: 10 }}
       />
       <CButton
         variant="primary"
         label="Import Existing Deck"
-        onPress={onImportDeck}
+        onPress={() => {
+          onImportDeck();
+          onClose();
+        }}
         style={{ marginBottom: 10 }}
       />
     </Modal>

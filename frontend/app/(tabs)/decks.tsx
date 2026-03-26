@@ -14,7 +14,6 @@ import { usePathname } from "expo-router";
 import { Modal } from "@/components/common/Modal";
 import { CText } from "@/components/common/CText";
 import { CreateOrImportDeckModal } from "@/components/features/decks/CreateOrImportDeckModal";
-
 export default function Decks() {
   const [decks, setDecks] = useState<Deck[]>([]);
   const [isCreateOrImportDeckModalOpen, setIsCreateOrImportDeckModalOpen] =
@@ -133,6 +132,9 @@ export default function Decks() {
       <CreateNewDeckModal
         isOpen={isCreateDeckModalOpen}
         onClose={() => setIsCreateDeckModalOpen(false)}
+        onSuccess={() => {
+          getAllDecks();
+        }}
       />
       {deckIdToDelete && (
         <Modal

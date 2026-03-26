@@ -60,13 +60,13 @@ export const SingleDeckReview = ({
     {
       label: "Good",
       borderColor: "#ADD85D",
-      backgroundColor: "#e5f1cf",
+      backgroundColor: "#ecf5dc",
       grade: 3,
     },
     {
       label: "Easy",
       borderColor: "#7CD6A0",
-      backgroundColor: "#e8f5ed",
+      backgroundColor: "#e0f5f0",
       grade: 4,
     },
   ];
