@@ -17,6 +17,8 @@ Test coverage:
 """
 import json
 from unittest.mock import patch
+from services.auth_service import AuthService
+from db import get_db_cursor
 
 
 # ----------------------------
@@ -27,6 +29,7 @@ def fake_google_token_valid(*args, **kwargs):
     return {
         'sub': 'google-id-123',
         'email': 'test@example.com',
+        'name': 'Test User',
         'iss': 'accounts.google.com'
     }
 
@@ -296,3 +299,102 @@ class TestLogoutUnit:
         
         # verify 401 Unauthorized
         assert response.status_code == 401
+
+
+class TestBuiltinDecksOnSignup:
+    """Verify that built-in decks are copied to a new user on first login.
+
+    These tests call AuthService directly against the real test DB (no mocking),
+    so they depend on the system_decks fixture to pre-seed the system user's decks.
+    """
+
+    NEW_USER_ID = 'new-signup-user-id'
+
+    def _cleanup(self):
+        """Remove the test user created by signup (cascades to their decks/cards)."""
+        with get_db_cursor(commit=True) as cursor:
+            cursor.execute("DELETE FROM Users WHERE u_id = %s", (self.NEW_USER_ID,))
+
+    def _signup(self):
+        AuthService.get_or_create_oauth_user(
+            google_id=self.NEW_USER_ID,
+            email='newuser@example.com',
+            display_name='New User',
+            timezone='UTC',
+        )
+
+    def test_new_user_receives_four_builtin_decks(self, system_decks):
+        """A new user should have exactly 4 decks copied from the system."""
+        try:
+            self._signup()
+            with get_db_cursor() as cursor:
+                cursor.execute(
+                    "SELECT COUNT(*) AS count FROM Decks WHERE u_id = %s",
+                    (self.NEW_USER_ID,)
+                )
+                assert cursor.fetchone()['count'] == 4
+        finally:
+            self._cleanup()
+
+    def test_new_user_builtin_deck_names(self, system_decks):
+        """Copied decks should have the correct names."""
+        try:
+            self._signup()
+            with get_db_cursor() as cursor:
+                cursor.execute(
+                    "SELECT deck_name FROM Decks WHERE u_id = %s",
+                    (self.NEW_USER_ID,)
+                )
+                names = {row['deck_name'] for row in cursor.fetchall()}
+            assert names == {
+                'Mandarin Chinese Beginner',
+                'Korean Beginner',
+                'French Beginner',
+                'Japanese Beginner',
+            }
+        finally:
+            self._cleanup()
+
+    def test_new_user_builtin_cards_are_copied(self, system_decks):
+        """Each copied deck should contain the same cards as the system deck."""
+        try:
+            self._signup()
+            with get_db_cursor() as cursor:
+                cursor.execute("""
+                    SELECT COUNT(*) AS count
+                    FROM Cards c
+                    JOIN Decks d ON c.d_id = d.d_id
+                    WHERE d.u_id = %s
+                """, (self.NEW_USER_ID,))
+                # 3 cards × 4 decks seeded by the system_decks fixture
+                assert cursor.fetchone()['count'] == 12
+        finally:
+            self._cleanup()
+
+    def test_builtin_decks_are_private(self, system_decks):
+        """Copied decks should be private (is_public = false)."""
+        try:
+            self._signup()
+            with get_db_cursor() as cursor:
+                cursor.execute(
+                    "SELECT is_public FROM Decks WHERE u_id = %s",
+                    (self.NEW_USER_ID,)
+                )
+                for row in cursor.fetchall():
+                    assert row['is_public'] is False
+        finally:
+            self._cleanup()
+
+    def test_existing_user_does_not_get_duplicate_decks(self, system_decks):
+        """A second login for the same user must not copy decks again."""
+        try:
+            self._signup()
+            self._signup()  # second call — user already exists
+            with get_db_cursor() as cursor:
+                cursor.execute(
+                    "SELECT COUNT(*) AS count FROM Decks WHERE u_id = %s",
+                    (self.NEW_USER_ID,)
+                )
+                assert cursor.fetchone()['count'] == 4
+        finally:
+            self._cleanup()

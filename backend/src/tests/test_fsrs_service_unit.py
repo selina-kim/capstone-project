@@ -306,7 +306,6 @@ class TestFsrsServiceUnit:
         updated_card_mock.stability = 3.0
         updated_card_mock.due = datetime.now(timezone.utc)
         updated_card_mock.last_review = datetime.now(timezone.utc)
-
         mock_scheduler_instance.review_card.return_value = (updated_card_mock, None)
 
         # Execute
