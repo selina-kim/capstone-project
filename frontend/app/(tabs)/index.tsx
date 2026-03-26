@@ -81,10 +81,10 @@ export default function Index() {
             />
           ))
         ) : (
-          <CText 
-            style={{ 
+          <CText
+            style={{
               textAlign: "center",
-              top: 10
+              top: 10,
             }}
           >
             No reviewed decks yet

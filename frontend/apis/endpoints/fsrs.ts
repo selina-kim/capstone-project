@@ -28,27 +28,31 @@ export const logReview = (
   grade: number,
   review_duration: number,
 ): Promise<{ data: ReviewLogResponseData; error: string | null }> =>
-  client.post(`/reviews`, JSON.stringify({
-    card_id,
-    grade,
-    review_duration,
-  }));
+  client.post(
+    `/reviews`,
+    JSON.stringify({
+      card_id,
+      grade,
+      review_duration,
+    }),
+  );
 
 export const endReview = (
   total_cards_reviewed: number,
 ): Promise<{
-  data: EndReviewResponseData; error: string | null }> =>
-  client.post(`/end-review`, JSON.stringify({ total_cards_reviewed }));
+  data: EndReviewResponseData;
+  error: string | null;
+}> => client.post(`/end-review`, JSON.stringify({ total_cards_reviewed }));
 
 export const getDueCards = (): Promise<{
   data: GetDueCardsResponseData;
   error: string | null;
 }> => client.get(`/due-cards`);
 
-export const getNumDueCards = (
-): Promise<{
-  data: { num_due_cards: number }; error: string | null }> => 
-  client.get(`/num-due-cards`);
+export const getNumDueCards = (): Promise<{
+  data: { num_due_cards: number };
+  error: string | null;
+}> => client.get(`/num-due-cards`);
 
 export default {
   logReview,
@@ -56,4 +60,3 @@ export default {
   getDueCards,
   getNumDueCards,
 };
-

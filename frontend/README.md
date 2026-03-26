@@ -49,6 +49,7 @@ npx expo start
 ```
 
 Might have to use this if running on wsl2 + using actual Android phone (not emulator)
+
 ```bash
 npm start -- --tunnel
 ```
