@@ -9,10 +9,12 @@ import { useLanguageOptions } from "@/context/LanguageOptionsContext";
 export const SingleDeckDetails = ({
   deckDetails,
   numOfCards,
+  cardsDue,
   onEditDeck,
 }: {
   deckDetails: DeckDetails;
   numOfCards: number;
+  cardsDue: number;
   onEditDeck: () => void;
 }) => {
   const { getLanguageName } = useLanguageOptions();
@@ -72,10 +74,14 @@ export const SingleDeckDetails = ({
         />
         <DeckDetailItem
           label="Last Reviewed"
-          value={deckDetails.last_reviewed}
+          value={
+            deckDetails.last_reviewed
+              ? new Date(deckDetails.last_reviewed).toLocaleDateString()
+              : "Never"
+          }
         />
         <DeckDetailItem label="Total Cards" value={numOfCards} />
-        <DeckDetailItem label="Cards Due" value="TODO" />
+        <DeckDetailItem label="Cards Due" value={cardsDue} />
         <View>
           <CText bold style={{ color: COLORS.text.secondary }}>
             Description
