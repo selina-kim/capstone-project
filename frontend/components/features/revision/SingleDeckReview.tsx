@@ -6,11 +6,18 @@ import { SoundIcon } from "@/assets/icons/SoundIcon";
 import { CButton } from "@/components/common/CButton";
 import { CText } from "@/components/common/CText";
 import { COLORS } from "@/constants/colors";
+import { SHADOWS } from "@/constants/shadows";
 import { useReviewSession } from "@/context/ReviewSessionContext";
 import { Card } from "@/types/decks";
 import { getImageUrl } from "@/utils/imageUtils";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Image, Pressable, ScrollView, View } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  ScrollView,
+  View,
+} from "react-native";
 
 interface SingleDeckReviewProps {
   deckId: string;
@@ -38,10 +45,10 @@ export const SingleDeckReview = ({
   const { exitReviewSessionSignal } = useReviewSession();
 
   const difficultyOptions = [
-    { label: "Again", borderColor: "#F2A5A1", grade: 1 },
-    { label: "Hard",  borderColor: "#F1B35E", grade: 2 },
-    { label: "Good",  borderColor: "#ADD85D", grade: 3 },
-    { label: "Easy",  borderColor: "#7CD6A0", grade: 4 },
+    { label: "Again", borderColor: "#F2A5A1", backgroundColor: "#f7e5e4" , grade: 1 },
+    { label: "Hard", borderColor: "#F1B35E", backgroundColor: "#f7e8d4" , grade: 2 },
+    { label: "Good", borderColor: "#ADD85D", backgroundColor: "#e5f1cf" , grade: 3 },
+    { label: "Easy", borderColor: "#7CD6A0", backgroundColor: "#e8f5ed" , grade: 4 },
   ];
 
   const getCardsToReview = useCallback(async () => {
@@ -73,7 +80,11 @@ export const SingleDeckReview = ({
 
   // Call endReview when session is exited (e.g., back gesture or app close)
   useEffect(() => {
-    if (exitReviewSessionSignal > 0 && currentCardIndex > 0 && !isReviewComplete) {
+    if (
+      exitReviewSessionSignal > 0 &&
+      currentCardIndex > 0 &&
+      !isReviewComplete
+    ) {
       endReview(currentCardIndex);
     }
   }, [exitReviewSessionSignal, currentCardIndex, isReviewComplete]);
@@ -263,9 +274,12 @@ export const SingleDeckReview = ({
                 borderColor: COLORS.icon.outlinePrimary,
                 borderWidth: 2,
                 width: "100%",
-                backgroundColor: isFrontSide ? COLORS.background.primary : COLORS.background.secondary,
+                backgroundColor: isFrontSide
+                  ? COLORS.background.primary
+                  : COLORS.background.secondary,
                 rowGap: 14,
                 position: "relative",
+                ...SHADOWS.default,
               }}
             >
               <Pressable
@@ -356,7 +370,7 @@ export const SingleDeckReview = ({
                     alignItems: "center",
                     justifyContent: "center",
                     rowGap: 4,
-                    backgroundColor: COLORS.background.primary,
+                    backgroundColor: option.backgroundColor,
                     height: 80,
                   }}
                 >
