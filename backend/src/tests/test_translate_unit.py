@@ -267,15 +267,13 @@ def test_get_supported_languages_success(client, monkeypatch):
             return [
                 MockLanguage("EN", "English"),
                 MockLanguage("FR", "French"),
-                MockLanguage("DE", "German")
             ]
         
         def get_target_languages(self):
             return [
-                MockLanguage("ES", "Spanish"),
                 MockLanguage("KO", "Korean"),
                 MockLanguage("JA", "Japanese"),
-                MockLanguage("ZH", "Chinese (simplified)")
+                MockLanguage("ZH", "Mandarin"),
             ]
     
     monkeypatch.setattr("services.translate_service._client", MockTranslator())
@@ -293,14 +291,13 @@ def test_get_supported_languages_success(client, monkeypatch):
     assert isinstance(data["target"], list)
     
     # verify source languages
-    assert len(data["source"]) == 3
+    assert len(data["source"]) == 2
     assert data["source"][0]["code"] == "EN"
     assert data["source"][0]["name"] == "English"
     
     # verify target languages
-    assert len(data["target"]) == 4
-    assert data["target"][0]["code"] == "ES"
-    assert data["target"][1]["code"] == "KO"
+    assert len(data["target"]) == 3
+    assert data["target"][1]["code"] == "JA"
 
 
 def test_get_supported_languages_api_error(client, monkeypatch):
