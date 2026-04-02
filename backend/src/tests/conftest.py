@@ -163,10 +163,10 @@ def db_setup(db_schema):
     """Set up test data before each test."""
     with get_db_cursor(commit=True) as cursor:
         # Clean up existing test data
+        cursor.execute("DELETE FROM Review_Logs WHERE c_id IN (SELECT c_id FROM Cards WHERE d_id IN (SELECT d_id FROM Decks WHERE u_id = 'test-user-id'))")
         cursor.execute("DELETE FROM Cards WHERE d_id IN (SELECT d_id FROM Decks WHERE u_id = 'test-user-id')")
         cursor.execute("DELETE FROM Decks WHERE u_id = 'test-user-id'")
         cursor.execute("DELETE FROM Users WHERE u_id = 'test-user-id'")
-        cursor.execute("DELETE FROM Review_Logs WHERE c_id IN (SELECT c_id FROM Cards WHERE d_id IN (SELECT d_id FROM Decks WHERE u_id = 'test-user-id'))")
 
         # Insert test user
         cursor.execute("""
@@ -238,10 +238,10 @@ def db_setup(db_schema):
     
     # Cleanup after each test
     with get_db_cursor(commit=True) as cursor:
+        cursor.execute("DELETE FROM Review_Logs WHERE c_id IN (SELECT c_id FROM Cards WHERE d_id IN (SELECT d_id FROM Decks WHERE u_id = 'test-user-id'))")
         cursor.execute("DELETE FROM Cards WHERE d_id IN (SELECT d_id FROM Decks WHERE u_id = 'test-user-id')")
         cursor.execute("DELETE FROM Decks WHERE u_id = 'test-user-id'")
         cursor.execute("DELETE FROM Users WHERE u_id = 'test-user-id'")
-        cursor.execute("DELETE FROM Review_Logs WHERE c_id IN (SELECT c_id FROM Cards WHERE d_id IN (SELECT d_id FROM Decks WHERE u_id = 'test-user-id'))")
     
     # Clean up MinIO test files
     cleanup_minio_test_data()
