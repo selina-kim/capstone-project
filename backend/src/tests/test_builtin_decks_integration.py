@@ -84,26 +84,26 @@ class TestSystemUser:
 EXPECTED_DECKS = [
     {
         "deck_name":  "Mandarin Chinese Beginner",
-        "word_lang":  "Chinese (Mandarin)",
-        "trans_lang": "English",
+        "word_lang":  "ZH",
+        "trans_lang": "EN",
         "description": "Essential beginner vocabulary for Mandarin Chinese",
     },
     {
         "deck_name":  "Japanese Beginner",
-        "word_lang":  "Japanese",
-        "trans_lang": "English",
+        "word_lang":  "JA",
+        "trans_lang": "EN",
         "description": "Essential beginner vocabulary for Japanese",
     },
     {
         "deck_name":  "Korean Beginner",
-        "word_lang":  "Korean",
-        "trans_lang": "English",
+        "word_lang":  "KO",
+        "trans_lang": "EN",
         "description": "Essential beginner vocabulary for Korean",
     },
     {
         "deck_name":  "French Beginner",
-        "word_lang":  "French",
-        "trans_lang": "English",
+        "word_lang":  "FR",
+        "trans_lang": "EN",
         "description": "Essential beginner vocabulary for French",
     },
 ]
