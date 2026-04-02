@@ -7,6 +7,7 @@ import json
 import io
 from scipy.io import wavfile
 from services.tts_service import TTSService
+import numpy as np
 
 tts_bp = Blueprint("tts", __name__)
 tts_service = TTSService()
@@ -65,8 +66,7 @@ def text_to_speech():
     {
         "text": "Text to convert to speech" (required),
         "language": "en" (required),
-        "speaker": "Craig Gutsy" (optional - if not provided, uses language-specific default),
-        "speaker_wav": "path/to/voice.wav" (optional, for voice cloning)
+        "speaker": "Craig Gutsy" (optional - if not provided, uses language-specific default)
     }
     
     Returns: WAV audio file
@@ -84,7 +84,6 @@ def text_to_speech():
         text = data.get("text")
         language = data.get("language")
         speaker = data.get("speaker")
-        speaker_wav = data.get("speaker_wav")
         
         # Validate required fields
         if not text:
@@ -117,27 +116,22 @@ def text_to_speech():
                 status=400,
                 mimetype="application/json; charset=utf-8"
             )
-        
-        # Generate speech using xtts_v2
-        audio_data = tts_service.generate_speech(
-            text=text,
-            language=language,
-            speaker=speaker,
-            speaker_wav=speaker_wav
-        )
-        
-        if len(audio_data) == 0:
+
+        # Generate speech
+        audio = tts_service.generate_speech(text=text, language=language, speaker=speaker)
+
+        if audio.size == 0:
             return Response(
                 json.dumps({"error": "Failed to generate audio"}, ensure_ascii=False),
                 status=500,
                 mimetype="application/json; charset=utf-8"
             )
         
+        # Default sample rate for xtts v2
+        sample_rate = 24000 
         # Convert to WAV format in memory
-        # Coqui TTS typically outputs at 24000 Hz
-        sample_rate = 24000
         wav_buffer = io.BytesIO()
-        wavfile.write(wav_buffer, sample_rate, audio_data)
+        wavfile.write(wav_buffer, sample_rate, audio)
         wav_buffer.seek(0)
         
         return send_file(
