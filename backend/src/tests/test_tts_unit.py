@@ -31,7 +31,7 @@ def test_tts_post_success_with_speaker(client, monkeypatch):
 
     # Mock TTSService
     class MockTTSService:
-        def generate_speech(self, text, language, model_name=None, speaker=None, speaker_wav=None):
+        def generate_speech(self, text, language, speaker=None):
             assert text == "Hello world"
             assert language == "en"
             assert speaker == "Claribel Dervla"
@@ -55,7 +55,7 @@ def test_tts_post_success_with_default_speaker(client, monkeypatch):
     mock_audio = np.array([0.1, 0.2, 0.3], dtype=np.float32)
 
     class MockTTSService:
-        def generate_speech(self, text, language, model_name=None, speaker=None, speaker_wav=None):
+        def generate_speech(self, text, language, speaker=None):
             assert text == "안녕하세요"
             assert language == "ko"
             assert speaker == "Daisy Studious"  # Default for Korean
@@ -74,7 +74,7 @@ def test_tts_post_success_korean_text(client, monkeypatch):
     mock_audio = np.array([0.5, 0.6, 0.7], dtype=np.float32)
 
     class MockTTSService:
-        def generate_speech(self, text, language, model_name=None, speaker=None, speaker_wav=None):
+        def generate_speech(self, text, language, speaker=None):
             return mock_audio
 
     monkeypatch.setattr("routes.tts.tts_service", MockTTSService())
@@ -96,7 +96,7 @@ def test_tts_post_success_japanese_text(client, monkeypatch):
     mock_audio = np.array([0.1, 0.2], dtype=np.float32)
 
     class MockTTSService:
-        def generate_speech(self, text, language, model_name=None, speaker=None, speaker_wav=None):
+        def generate_speech(self, text, language, speaker=None):
             return mock_audio
 
     monkeypatch.setattr("routes.tts.tts_service", MockTTSService())
@@ -159,7 +159,7 @@ def test_tts_post_empty_audio_generation(client, monkeypatch):
     """Test error when audio generation returns empty data."""
 
     class MockTTSService:
-        def generate_speech(self, text, language, model_name=None, speaker=None, speaker_wav=None):
+        def generate_speech(self, text, language, speaker=None):
             return np.array([])  # Empty audio
 
     monkeypatch.setattr("routes.tts.tts_service", MockTTSService())

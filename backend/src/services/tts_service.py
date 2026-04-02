@@ -6,7 +6,6 @@ from TTS.api import TTS
 import torch
 import numpy as np
 from typing import Optional, List
-import os
 
 
 class TTSService:
@@ -70,7 +69,7 @@ class TTSService:
         if not speaker_wav and not speaker:
             if hasattr(tts, 'speakers') and tts.speakers:
                 speaker = tts.speakers[0]  # Use first available speaker
-                print(f"No speaker specified. Using default speaker: {speaker}")
+                # print(f"No speaker specified. Using default speaker: {speaker}")
 
         print(f"Generating speech with model: {model_name}, language: {language}, speaker: {speaker}, speaker_wav: {speaker_wav}")
         
@@ -114,10 +113,10 @@ class TTSService:
         if not speaker_wav and not speaker:
             if hasattr(tts, 'speakers') and tts.speakers:
                 speaker = tts.speakers[0]  # Use first available speaker
-                print(f"No speaker specified. Using default speaker: {speaker}")
+                # print(f"No speaker specified. Using default speaker: {speaker}")
 
-        print(f"Generating speech to file: {file_path}")
-        
+        # print(f"Generating speech to file: {file_path}")
+
         # Generate and save audio
         if speaker_wav:
             tts.tts_to_file(
