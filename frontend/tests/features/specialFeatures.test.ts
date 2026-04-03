@@ -63,7 +63,7 @@ describe('Google Sign-In Authentication', () => {
 // Deck and Card CRUD Operations
 describe('Deck CRUD Operations', () => {
   test('should create new deck with optimistic update', async () => {
-    const mockCreateDeck = jest.fn(async (deckData) => {
+    const mockCreateDeck = jest.fn(async (deckData: { deck_name: string; language: string }) => {
       // Optimistic update - add to UI immediately
       const optimisticDeck = {
         d_id: 'temp_' + Date.now(),
@@ -99,7 +99,7 @@ describe('Deck CRUD Operations', () => {
   });
 
   test('should update deck with optimistic update', async () => {
-    const mockUpdateDeck = jest.fn(async (deckId: string, updates) => {
+    const mockUpdateDeck = jest.fn(async (deckId: string, updates: { deck_name: string }) => {
       return {
         d_id: deckId,
         ...updates,
@@ -145,7 +145,7 @@ describe('Deck CRUD Operations', () => {
 
 describe('Card CRUD Operations', () => {
   test('should create new card in deck', async () => {
-    const mockCreateCard = jest.fn(async (deckId: string, cardData) => {
+    const mockCreateCard = jest.fn(async (deckId: string, cardData: { front: string; back: string }) => {
       return {
         c_id: 'card_' + Date.now(),
         d_id: deckId,
@@ -163,7 +163,7 @@ describe('Card CRUD Operations', () => {
   });
 
   test('should update card content', async () => {
-    const mockUpdateCard = jest.fn(async (cardId: string, updates) => {
+    const mockUpdateCard = jest.fn(async (cardId: string, updates: { back: string }) => {
       return {
         c_id: cardId,
         ...updates,

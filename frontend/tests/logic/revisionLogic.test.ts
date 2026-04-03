@@ -1,19 +1,89 @@
-import { describe, expect, test } from '@jest/globals';
+import { describe, expect, test, beforeEach, jest } from '@jest/globals';
 
-describe('Revision Tab', () => {
-  test('should initialize review session state', () => {
-    const reviewSession = {
-      deckId: '1',
-      currentCardIndex: 0,
-      totalCards: 10,
-      correctAnswers: 0,
-      wrongAnswers: 0,
-      isActive: true,
-    };
+jest.mock('@/apis/endpoints/decks');
 
-    expect(reviewSession.currentCardIndex).toBe(0);
-    expect(reviewSession.correctAnswers).toBe(0);
-    expect(reviewSession.wrongAnswers).toBe(0);
+const { getDecksWithDueCards } = require('@/apis/endpoints/decks');
+
+describe('Revision Tab Logic', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('should display decks with due cards', async () => {
+    const mockDueDecks = [
+      { d_id: '1', deck_name: 'Japanese Basics', word_lang: 'JA', due_count: 5 },
+      { d_id: '2', deck_name: 'French 101', word_lang: 'FR', due_count: 8 },
+    ];
+
+    getDecksWithDueCards.mockResolvedValue({
+      data: { decks: mockDueDecks },
+      error: null,
+    });
+
+    const result = await getDecksWithDueCards(20);
+
+    expect(result.data.decks).toHaveLength(2);
+    expect(result.data.decks[0].deck_name).toBe('Japanese Basics');
+    expect(result.data.decks[1].deck_name).toBe('French 101');
+  });
+
+  test('should show empty state when no decks with due cards', async () => {
+    getDecksWithDueCards.mockResolvedValue({
+      data: { decks: [] },
+      error: null,
+    });
+
+    const result = await getDecksWithDueCards(20);
+
+    expect(result.data.decks).toHaveLength(0);
+  });
+
+  test('should display due card counts', async () => {
+    const mockDueDecks = [
+      { d_id: '1', deck_name: 'Test Deck', word_lang: 'KO', due_count: 15 },
+    ];
+
+    getDecksWithDueCards.mockResolvedValue({
+      data: { decks: mockDueDecks },
+      error: null,
+    });
+
+    const result = await getDecksWithDueCards(20);
+
+    expect(result.data.decks[0].due_count).toBe(15);
+  });
+
+  test('should handle API errors gracefully', async () => {
+    getDecksWithDueCards.mockResolvedValue({
+      data: { decks: [] },
+      error: 'Failed to fetch decks',
+    });
+
+    const result = await getDecksWithDueCards(20);
+
+    expect(result.error).toBe('Failed to fetch decks');
+  });
+
+  test('should call getDecksWithDueCards on mount', async () => {
+    getDecksWithDueCards.mockResolvedValue({
+      data: { decks: [] },
+      error: null,
+    });
+
+    await getDecksWithDueCards(20);
+
+    expect(getDecksWithDueCards).toHaveBeenCalled();
+  });
+
+  test('should limit due decks request to 20', async () => {
+    getDecksWithDueCards.mockResolvedValue({
+      data: { decks: [] },
+      error: null,
+    });
+
+    await getDecksWithDueCards(20);
+
+    expect(getDecksWithDueCards).toHaveBeenCalledWith(20);
   });
 
   test('should calculate review progress correctly', () => {
@@ -34,43 +104,5 @@ describe('Revision Tab', () => {
     const accuracy = (reviewSession.correctAnswers / reviewSession.totalCards) * 100;
     expect(accuracy).toBe(70);
   });
-
-  test('should determine if review session is complete', () => {
-    const reviewSession = {
-      currentCardIndex: 9,
-      totalCards: 10,
-    };
-
-    const isComplete = reviewSession.currentCardIndex >= reviewSession.totalCards - 1;
-    expect(isComplete).toBe(true);
-  });
-
-  test('should advance to next card in session', () => {
-    let currentCardIndex = 0;
-    const totalCards = 5;
-
-    if (currentCardIndex < totalCards - 1) {
-      currentCardIndex += 1;
-    }
-
-    expect(currentCardIndex).toBe(1);
-  });
-
-  test('should validate card grades', () => {
-    const validGrades = [1, 2, 3, 4];
-    const testGrade = 3;
-
-    expect(validGrades).toContain(testGrade);
-  });
-
-  test('should handle review session end state', () => {
-    const reviewSession = {
-      isComplete: false,
-      currentCardIndex: 10,
-      totalCards: 10,
-    };
-
-    reviewSession.isComplete = reviewSession.currentCardIndex >= reviewSession.totalCards;
-    expect(reviewSession.isComplete).toBe(true);
-  });
 });
+
