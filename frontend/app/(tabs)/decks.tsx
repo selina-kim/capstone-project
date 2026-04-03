@@ -14,11 +14,13 @@ import { usePathname } from "expo-router";
 import { Modal } from "@/components/common/Modal";
 import { CText } from "@/components/common/CText";
 import { CreateOrImportDeckModal } from "@/components/features/decks/CreateOrImportDeckModal";
+import { ImportDeckModal } from "@/components/features/decks/ImportDeckModal";
 export default function Decks() {
   const [decks, setDecks] = useState<Deck[]>([]);
   const [isCreateOrImportDeckModalOpen, setIsCreateOrImportDeckModalOpen] =
     useState(false);
   const [isCreateDeckModalOpen, setIsCreateDeckModalOpen] = useState(false);
+  const [isImportDeckModalOpen, setIsImportDeckModalOpen] = useState(false);
   const [focusedDeckId, setFocusedDeckId] = useState<string>();
   const [deckIdToDelete, setDeckIdToDelete] = useState<string>();
   const [isDeletingDeck, setIsDeletingDeck] = useState(false);
@@ -38,7 +40,12 @@ export default function Decks() {
   useEffect(() => {
     setFocusedDeckId(undefined);
     getAllDecks();
-  }, [isCreateOrImportDeckModalOpen, pathname]);
+  }, [
+    isCreateOrImportDeckModalOpen,
+    isCreateDeckModalOpen,
+    isImportDeckModalOpen,
+    pathname,
+  ]);
 
   const handleDeleteDeck = async (deckId: string) => {
     if (isDeletingDeck) {
@@ -127,11 +134,18 @@ export default function Decks() {
         isOpen={isCreateOrImportDeckModalOpen}
         onClose={() => setIsCreateOrImportDeckModalOpen(false)}
         onCreateDeck={() => setIsCreateDeckModalOpen(true)}
-        onImportDeck={() => {}}
+        onImportDeck={() => setIsImportDeckModalOpen(true)}
       />
       <CreateNewDeckModal
         isOpen={isCreateDeckModalOpen}
         onClose={() => setIsCreateDeckModalOpen(false)}
+        onSuccess={() => {
+          getAllDecks();
+        }}
+      />
+      <ImportDeckModal
+        isOpen={isImportDeckModalOpen}
+        onClose={() => setIsImportDeckModalOpen(false)}
         onSuccess={() => {
           getAllDecks();
         }}

@@ -44,6 +44,9 @@ export const updateDeck = (
 export const deleteDeck = (deckId: string | number) =>
   client.delete(`/decks/${deckId}`);
 
+export const importDeck = (formData: FormData) =>
+  client.post(`/decks/import`, formData);
+
 export default {
   getDecks,
   getDecksWithDueCards,
@@ -52,4 +55,5 @@ export default {
   createDeck,
   updateDeck,
   deleteDeck,
+  importDeck,
 };
