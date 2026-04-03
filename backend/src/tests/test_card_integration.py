@@ -1267,7 +1267,7 @@ class TestImageRetrievalEndpoint:
 class TestErrorHandling:
     """Tests for error handling and edge cases."""
     
-    def test_create_card_with_empty_required_field(self, client, auth_headers):
+    def test_create_card_with_empty_required_field(self, client, auth_headers, deck_id):
         """Test card creation with empty required fields."""
         card_data = {
             "word": "   ",  # Whitespace only
@@ -1275,7 +1275,7 @@ class TestErrorHandling:
         }
         
         response = client.post(
-            "/decks/1/card",
+            f"/decks/{deck_id}/card",
             data=json.dumps(card_data),
             content_type='application/json',
             headers=auth_headers
@@ -1286,7 +1286,7 @@ class TestErrorHandling:
         result = json.loads(response.data)
         assert "Missing required field" in result["error"] or "required" in result["error"].lower()
     
-    def test_create_card_with_empty_translation(self, client, auth_headers):
+    def test_create_card_with_empty_translation(self, client, auth_headers, deck_id):
         """Test card creation with empty translation field."""
         card_data = {
             "word": "hello",
@@ -1294,7 +1294,7 @@ class TestErrorHandling:
         }
         
         response = client.post(
-            "/decks/1/card",
+            f"/decks/{deck_id}/card",
             data=json.dumps(card_data),
             content_type='application/json',
             headers=auth_headers
@@ -1305,10 +1305,10 @@ class TestErrorHandling:
         result = json.loads(response.data)
         assert "Missing required field" in result["error"] or "required" in result["error"].lower()
     
-    def test_get_card_with_large_ids(self, client, auth_headers):
+    def test_get_card_with_large_ids(self, client, auth_headers, deck_id):
         """Test get_card handles very large card IDs gracefully."""
         # Try to get a card with very large IDs
-        response = client.get("/decks/1/cards/999999999", headers=auth_headers)
+        response = client.get(f"/decks/{deck_id}/cards/999999999", headers=auth_headers)
         
         # Should return 404 since card doesn't exist
         assert response.status_code == 404
