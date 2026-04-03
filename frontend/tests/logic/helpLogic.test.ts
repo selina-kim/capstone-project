@@ -1,90 +1,111 @@
-import { describe, expect, test } from '@jest/globals';
+import { describe, expect, test, beforeEach, jest } from '@jest/globals';
 
-describe('Help Tab', () => {
+const mockFAQ = [
+  {
+    id: '1',
+    question: 'How do I create a deck?',
+    answer: 'Click the + button and follow the steps.',
+  },
+  {
+    id: '2',
+    question: 'What is FSRS?',
+    answer: 'FSRS is a spaced repetition algorithm.',
+  },
+];
+
+const mockTips = [
+  {
+    id: '1',
+    title: 'Tip 1',
+    description: 'Study regularly for best results.',
+  },
+];
+
+describe('Help Tab Logic', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   test('should display help content sections', () => {
     const helpSections = [
-      { id: '1', title: 'Getting Started', content: 'Guide to get started...' },
-      { id: '2', title: 'Terminology', content: 'Learn key terms...' },
-      { id: '3', title: 'Features', content: 'How to use features...' },
+      { id: '1', title: 'Create a Deck', step: 'Step 1' },
+      { id: '2', title: 'Add Cards', step: 'Step 2' },
+      { id: '3', title: 'Start Reviewing', step: 'Step 3' },
+      { id: '4', title: 'Rate Your Memory', step: 'Step 4' },
     ];
 
-    expect(helpSections).toHaveLength(3);
-    expect(helpSections[0].title).toBe('Getting Started');
+    expect(helpSections).toHaveLength(4);
+    expect(helpSections[0].title).toBe('Create a Deck');
   });
 
-  test('should search help content', () => {
-    const helpData = [
-      { id: '1', title: 'Getting Started', keywords: ['start', 'begin', 'guide'] },
-      { id: '2', title: 'Card Management', keywords: ['card', 'create', 'edit'] },
-      { id: '3', title: 'Deck Navigation', keywords: ['deck', 'navigate', 'browse'] },
+  test('should display Getting Started steps', () => {
+    const startingSteps = [
+      {
+        title: 'Create a Deck',
+        step: 'Step 1',
+        description: 'Start by creating a new deck for the language you want to learn.',
+      },
+      {
+        title: 'Add Cards',
+        step: 'Step 2',
+        description: 'Add flashcards to your deck.',
+      },
+      {
+        title: 'Start Reviewing',
+        step: 'Step 3',
+        description: 'Begin your review session.',
+      },
+      {
+        title: 'Rate Your Memory',
+        step: 'Step 4',
+        description: 'Rate how easily you remembered it.',
+      },
     ];
 
-    const searchQuery = 'card';
-    const results = helpData.filter((item) =>
-      item.keywords.some((keyword) => keyword.includes(searchQuery))
-    );
-
-    expect(results).toHaveLength(1);
-    expect(results[0].title).toBe('Card Management');
-  });
-
-  test('should expand help section', () => {
-    let expandedSectionId: string | null = null;
-
-    const toggleSection = (sectionId: string) => {
-      expandedSectionId = expandedSectionId === sectionId ? null : sectionId;
-    };
-
-    expect(expandedSectionId).toBeNull();
-    toggleSection('1');
-    expect(expandedSectionId).toBe('1');
-    toggleSection('1');
-    expect(expandedSectionId).toBeNull();
+    expect(startingSteps).toHaveLength(4);
+    expect(startingSteps[0].step).toBe('Step 1');
   });
 
   test('should display FAQ items', () => {
-    const faqItems = [
-      {
-        id: '1',
-        question: 'How do I create a deck?',
-        answer: 'Click the + button and follow the steps...',
-      },
-      {
-        id: '2',
-        question: 'What is FSRS?',
-        answer: 'FSRS is a spaced repetition algorithm...',
-      },
-    ];
-
-    expect(faqItems).toHaveLength(2);
-    expect(faqItems[0].question).toContain('create');
-    expect(faqItems[1].answer).toContain('spaced');
+    expect(mockFAQ).toHaveLength(2);
+    expect(mockFAQ[0].question).toContain('create');
+    expect(mockFAQ[1].answer).toContain('spaced');
   });
 
-  test('should categories help by topic', () => {
-    const helpItems = [
-      { id: '1', title: 'Creating Decks', category: 'Getting Started' },
-      { id: '2', title: 'Adding Cards', category: 'Getting Started' },
-      { id: '3', title: 'FSRS Algorithm', category: 'Technical' },
-    ];
-
-    const startingItems = helpItems.filter((item) => item.category === 'Getting Started');
-    expect(startingItems).toHaveLength(2);
+  test('should have questions and answers in FAQ', () => {
+    mockFAQ.forEach((item) => {
+      expect(item).toHaveProperty('question');
+      expect(item).toHaveProperty('answer');
+      expect(item.question.length).toBeGreaterThan(0);
+      expect(item.answer.length).toBeGreaterThan(0);
+    });
   });
 
-  test('should track help interactions', () => {
-    const helpPageState = {
-      viewedSections: [] as string[],
-      searchQueries: [] as string[],
-      expandedSection: null as string | null,
+  test('should display tips', () => {
+    expect(mockTips).toHaveLength(1);
+    expect(mockTips[0].title).toBe('Tip 1');
+  });
+
+  test('should have title and description in tips', () => {
+    mockTips.forEach((tip) => {
+      expect(tip).toHaveProperty('title');
+      expect(tip).toHaveProperty('description');
+      expect(tip.title.length).toBeGreaterThan(0);
+      expect(tip.description.length).toBeGreaterThan(0);
+    });
+  });
+
+  test('should organize help content in sections', () => {
+    const helpContent = {
+      infoSection: { id: '1', name: 'Info' },
+      gettingStarted: { id: '2', name: 'Getting Started', itemCount: 4 },
+      faq: { id: '3', name: 'FAQ', itemCount: mockFAQ.length },
+      tips: { id: '4', name: 'Tips', itemCount: mockTips.length },
     };
 
-    helpPageState.viewedSections.push('1');
-    helpPageState.searchQueries.push('deck');
-    helpPageState.expandedSection = '2';
-
-    expect(helpPageState.viewedSections).toContain('1');
-    expect(helpPageState.searchQueries).toHaveLength(1);
-    expect(helpPageState.expandedSection).toBe('2');
+    expect(helpContent.gettingStarted.itemCount).toBe(4);
+    expect(helpContent.faq.itemCount).toBeGreaterThan(0);
+    expect(helpContent.tips.itemCount).toBeGreaterThan(0);
   });
 });
+
