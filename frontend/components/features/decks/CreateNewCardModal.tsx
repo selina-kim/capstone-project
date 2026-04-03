@@ -11,7 +11,7 @@ import { COLORS } from "@/constants/colors";
 import { useLanguageOptions } from "@/context/LanguageOptionsContext";
 import { Card } from "@/types/decks";
 import { useEffect, useState } from "react";
-import { Image, View } from "react-native";
+import { Image, Pressable, View } from "react-native";
 import { getImageUrl } from "@/utils/imageUtils";
 
 interface BaseCardModalProps {
@@ -59,6 +59,8 @@ export const CreateNewCardModal = ({
   const [isTranslatingWord, setIsTranslatingWord] = useState(false);
   const [isGeneratingExample, setIsGeneratingExample] = useState(false);
   const [image, setImage] = useState<string | null>(null);
+  const [imageOptions, setImageOptions] = useState<string[]>([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const { getLanguageName } = useLanguageOptions();
 
@@ -338,14 +340,41 @@ export const CreateNewCardModal = ({
       }
 
       if (data.results && data.results.length > 0) {
-        const imageUrl = data.results[0].urls.regular;
-        setImage(imageUrl);
+        const urls = data.results
+          .slice(0, 5)
+          .map((result: { urls: { regular: string } }) => result.urls.regular)
+          .filter(Boolean);
+
+        if (urls.length === 0) {
+          setImageError("No images found for this word");
+          setImage(null);
+          setImageOptions([]);
+          setCurrentImageIndex(0);
+          return;
+        }
+
+        setImageOptions(urls);
+        setCurrentImageIndex(0);
+        setImage(urls[0]);
       } else {
         setImageError("No images found for this word");
+        setImage(null);
+        setImageOptions([]);
+        setCurrentImageIndex(0);
       }
     } finally {
       setIsGeneratingImage(false);
     }
+  };
+
+  const handleCycleImage = () => {
+    if (!imageOptions.length) {
+      return;
+    }
+
+    const nextIndex = (currentImageIndex + 1) % imageOptions.length;
+    setCurrentImageIndex(nextIndex);
+    setImage(imageOptions[nextIndex]);
   };
 
   useEffect(() => {
@@ -355,6 +384,13 @@ export const CreateNewCardModal = ({
       setSourceExample(editCard.trans_example || "");
       setTargetExample(editCard.word_example || "");
       setImage(editCard.image || null);
+      if (editCard.image) {
+        setImageOptions([editCard.image]);
+        setCurrentImageIndex(0);
+      } else {
+        setImageOptions([]);
+        setCurrentImageIndex(0);
+      }
       setWordInputError(undefined);
       setExampleError(undefined);
       setImageError(undefined);
@@ -371,6 +407,8 @@ export const CreateNewCardModal = ({
       setSourceExample("");
       setTargetExample("");
       setImage(null);
+      setImageOptions([]);
+      setCurrentImageIndex(0);
       setWordInputError(undefined);
       setExampleError(undefined);
       setImageError(undefined);
@@ -458,12 +496,18 @@ export const CreateNewCardModal = ({
           }}
         >
           {image ? (
-            <Image
-              key={image}
-              source={{ uri: getImageUrl(image) ?? image }}
+            <Pressable
               style={{ width: "100%", height: "100%" }}
-              resizeMode="cover"
-            />
+              onPress={handleCycleImage}
+              disabled={!image}
+            >
+              <Image
+                key={image}
+                source={{ uri: getImageUrl(image) ?? image }}
+                style={{ width: "100%", height: "100%" }}
+                resizeMode="cover"
+              />
+            </Pressable>
           ) : (
             <CText bold style={{ color: COLORS.text.tertiary }}>
               No image
