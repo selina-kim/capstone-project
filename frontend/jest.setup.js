@@ -106,6 +106,8 @@ jest.mock('@react-navigation/native', () => ({
 
 // Suppress console warnings
 const originalWarn = console.warn;
+const originalLog = console.log;
+
 beforeAll(() => {
   console.warn = jest.fn((...args) => {
     if (
@@ -116,8 +118,17 @@ beforeAll(() => {
     }
     originalWarn(...args);
   });
+
+  // Redirect console.log to process.stdout to avoid Jest's source annotations
+  console.log = (...args) => {
+    const message = args.map(arg => 
+      typeof arg === 'string' ? arg : JSON.stringify(arg)
+    ).join(' ');
+    process.stdout.write(message + '\n');
+  };
 });
 
 afterAll(() => {
   console.warn = originalWarn;
+  console.log = originalLog;
 });

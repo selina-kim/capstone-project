@@ -49,6 +49,8 @@ export const SingleDeckReview = ({
   const [error, setError] = useState<string>();
   const cardStartTimeRef = useRef<number | null>(null);
   const audioPlayersRef = useRef<Map<string, AudioPlayer>>(new Map());
+  const reviewStartTimeRef = useRef<number | null>(null);
+  const hasMarkedReviewTTI = useRef(false);
   const { exitReviewSessionSignal } = useReviewSession();
 
   const difficultyOptions = [
@@ -79,6 +81,8 @@ export const SingleDeckReview = ({
   ];
 
   const getCardsToReview = useCallback(async () => {
+    reviewStartTimeRef.current = Date.now();
+    hasMarkedReviewTTI.current = false;
     setIsLoading(true);
     setError(undefined);
 
@@ -100,6 +104,15 @@ export const SingleDeckReview = ({
       setIsLoading(false);
     }
   }, [deckId]);
+
+  // Log TTI when first card is ready
+  useEffect(() => {
+    if (!isLoading && cards.length > 0 && !hasMarkedReviewTTI.current && reviewStartTimeRef.current) {
+      const tti = Date.now() - reviewStartTimeRef.current;
+      console.log(`[PERF] Review Start TTI: ${tti}ms`);
+      hasMarkedReviewTTI.current = true;
+    }
+  }, [isLoading, cards]);
 
   useEffect(() => {
     getCardsToReview();
