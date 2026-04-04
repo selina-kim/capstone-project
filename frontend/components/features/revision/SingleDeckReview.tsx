@@ -1,5 +1,6 @@
 import { getReviewCards } from "@/apis/endpoints/cards";
 import { logReview, endReview } from "@/apis/endpoints/fsrs";
+import { generateSpeechAudio } from "@/apis/endpoints/tts";
 import { HomeIcon } from "@/assets/icons/HomeIcon";
 import { RepeatIcon } from "@/assets/icons/RepeatIcon";
 import { SoundIcon } from "@/assets/icons/SoundIcon";
@@ -10,10 +11,13 @@ import { SHADOWS } from "@/constants/shadows";
 import { useReviewSession } from "@/context/ReviewSessionContext";
 import { Card } from "@/types/decks";
 import { getImageUrl } from "@/utils/imageUtils";
+import { createAudioPlayer, setAudioModeAsync, AudioPlayer } from "expo-audio";
+import * as FileSystem from "expo-file-system/legacy";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Image,
+  Platform,
   Pressable,
   ScrollView,
   View,
@@ -22,6 +26,7 @@ import {
 interface SingleDeckReviewProps {
   deckId: string;
   deckName: string;
+  deckLanguage: string;
   onGoHome: () => void;
   onReviewComplete: () => void;
   onKeepStudying: () => void;
@@ -30,6 +35,7 @@ interface SingleDeckReviewProps {
 export const SingleDeckReview = ({
   deckId,
   deckName,
+  deckLanguage,
   onGoHome,
   onReviewComplete,
   onKeepStudying,
@@ -40,8 +46,12 @@ export const SingleDeckReview = ({
   const [hasRevealedBackOnce, setHasRevealedBackOnce] = useState(false);
   const [isReviewComplete, setIsReviewComplete] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isTtsPlaying, setIsTtsPlaying] = useState(false);
   const [error, setError] = useState<string>();
   const cardStartTimeRef = useRef<number | null>(null);
+  const audioPlayerRef = useRef<AudioPlayer | null>(null);
+  const temporaryAudioUriRef = useRef<string | null>(null);
+  const webAudioUrlRef = useRef<string | null>(null);
   const { exitReviewSessionSignal } = useReviewSession();
 
   const difficultyOptions = [
@@ -109,9 +119,169 @@ export const SingleDeckReview = ({
     }
   }, [exitReviewSessionSignal, currentCardIndex, isReviewComplete]);
 
+  const removeTempAudio = useCallback(async () => {
+    if (audioPlayerRef.current) {
+      audioPlayerRef.current.remove();
+      audioPlayerRef.current = null;
+    }
+
+    if (temporaryAudioUriRef.current) {
+      try {
+        await FileSystem.deleteAsync(temporaryAudioUriRef.current, {
+          idempotent: true,
+        });
+      } catch (fileDeleteError) {
+        console.log("Failed to delete temporary TTS file:", fileDeleteError);
+      }
+      temporaryAudioUriRef.current = null;
+    }
+
+    if (webAudioUrlRef.current) {
+      URL.revokeObjectURL(webAudioUrlRef.current);
+      webAudioUrlRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      void removeTempAudio();
+    };
+  }, [removeTempAudio]);
+
   const totalCards = cards.length;
   const currentCard = cards[currentCardIndex];
   const progress = totalCards === 0 ? 0 : (currentCardIndex + 1) / totalCards;
+  const hasTtsForCurrentSide = Boolean(
+    currentCard &&
+    (isFrontSide ? currentCard.word_audio : currentCard.trans_audio),
+  );
+
+  const normalizeLanguageCode = (languageCode: string): string => {
+    const normalized = languageCode.trim().toLowerCase().replace("_", "-");
+    const languageAliases: Record<string, string> = {
+      zh: "zh-cn",
+      cn: "zh-cn",
+      ptbr: "pt",
+      "pt-br": "pt",
+      kr: "ko",
+    };
+    const supportedLanguages = new Set([
+      "en",
+      "es",
+      "fr",
+      "de",
+      "it",
+      "pt",
+      "pl",
+      "tr",
+      "ru",
+      "nl",
+      "cs",
+      "ar",
+      "zh-cn",
+      "ja",
+      "hu",
+      "ko",
+      "hi",
+    ]);
+
+    const mappedLanguage = languageAliases[normalized] ?? normalized;
+    return supportedLanguages.has(mappedLanguage) ? mappedLanguage : "en";
+  };
+
+  const blobToBase64 = (blob: Blob): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error("Failed to read audio data"));
+      reader.onloadend = () => {
+        const result = reader.result;
+        if (typeof result !== "string") {
+          reject(new Error("Failed to parse audio data"));
+          return;
+        }
+
+        const base64Data = result.split(",")[1];
+        if (!base64Data) {
+          reject(new Error("Invalid audio payload"));
+          return;
+        }
+
+        resolve(base64Data);
+      };
+      reader.readAsDataURL(blob);
+    });
+
+  const playTts = useCallback(async () => {
+    if (!currentCard?.word || isTtsPlaying) {
+      return;
+    }
+
+    setIsTtsPlaying(true);
+
+    try {
+      await removeTempAudio();
+      await setAudioModeAsync({
+        playsInSilentMode: true,
+      });
+
+      const { data, error: ttsError } = await generateSpeechAudio({
+        text: currentCard.word,
+        language: normalizeLanguageCode(deckLanguage),
+      });
+
+      if (ttsError || !data) {
+        throw new Error(ttsError ?? "Failed to generate speech");
+      }
+
+      let sourceUri: string;
+
+      if (Platform.OS === "web") {
+        const blob = await data.blob();
+        sourceUri = URL.createObjectURL(blob);
+        webAudioUrlRef.current = sourceUri;
+      } else {
+        const blob = await data.blob();
+        const audioBase64 = await blobToBase64(blob);
+        const baseDir =
+          (FileSystem.cacheDirectory as string | undefined) ??
+          (FileSystem.documentDirectory as string | undefined) ??
+          "";
+
+        if (!baseDir) {
+          throw new Error("Unable to access local storage for audio playback");
+        }
+
+        sourceUri = `${baseDir}tts-${currentCard.c_id}-${Date.now()}.wav`;
+        await FileSystem.writeAsStringAsync(sourceUri, audioBase64, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        temporaryAudioUriRef.current = sourceUri;
+      }
+
+      const player = createAudioPlayer({ uri: sourceUri });
+      audioPlayerRef.current = player;
+
+      player.addListener("playbackStatusUpdate", (status) => {
+        if (!status.isLoaded) {
+          return;
+        }
+
+        if (status.didJustFinish) {
+          setIsTtsPlaying(false);
+          void removeTempAudio();
+        }
+      });
+      player.play();
+    } catch (playbackError) {
+      const message =
+        playbackError instanceof Error
+          ? playbackError.message
+          : "Failed to play speech";
+      console.log(message);
+      setIsTtsPlaying(false);
+      await removeTempAudio();
+    }
+  }, [currentCard, deckLanguage, isTtsPlaying, removeTempAudio]);
 
   const handleCardPress = () => {
     if (isFrontSide) {
@@ -302,20 +472,30 @@ export const SingleDeckReview = ({
                 ...SHADOWS.default,
               }}
             >
-              <Pressable
-                style={{
-                  position: "absolute",
-                  top: 10,
-                  left: 10,
-                  zIndex: 10,
-                  padding: 8,
-                }}
-                onPress={() =>
-                  console.log(`TTS clicked for card ${currentCard.word}`)
-                }
-              >
-                <SoundIcon />
-              </Pressable>
+              {hasTtsForCurrentSide && (
+                <Pressable
+                  style={{
+                    position: "absolute",
+                    top: 10,
+                    left: 10,
+                    zIndex: 10,
+                    padding: 8,
+                  }}
+                  onPress={(event) => {
+                    event.stopPropagation();
+                    void playTts();
+                  }}
+                >
+                  {isTtsPlaying ? (
+                    <ActivityIndicator
+                      size="small"
+                      color={COLORS.icon.outlinePrimary}
+                    />
+                  ) : (
+                    <SoundIcon />
+                  )}
+                </Pressable>
+              )}
               <CText
                 style={{
                   textAlign: "center",
