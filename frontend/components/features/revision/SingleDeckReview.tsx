@@ -1,6 +1,5 @@
 import { getReviewCards } from "@/apis/endpoints/cards";
 import { logReview, endReview } from "@/apis/endpoints/fsrs";
-import { generateSpeechAudio } from "@/apis/endpoints/tts";
 import { HomeIcon } from "@/assets/icons/HomeIcon";
 import { RepeatIcon } from "@/assets/icons/RepeatIcon";
 import { SoundIcon } from "@/assets/icons/SoundIcon";
@@ -10,23 +9,24 @@ import { COLORS } from "@/constants/colors";
 import { SHADOWS } from "@/constants/shadows";
 import { useReviewSession } from "@/context/ReviewSessionContext";
 import { Card } from "@/types/decks";
+import { storage } from "@/utils/storage";
 import { getImageUrl } from "@/utils/imageUtils";
 import { createAudioPlayer, setAudioModeAsync, AudioPlayer } from "expo-audio";
-import * as FileSystem from "expo-file-system/legacy";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Image,
-  Platform,
   Pressable,
   ScrollView,
   View,
 } from "react-native";
 
+const buildAudioUrl = (objectId: string): string =>
+  `${process.env.EXPO_PUBLIC_API_URL}/cards/audio/${encodeURIComponent(objectId)}`;
+
 interface SingleDeckReviewProps {
   deckId: string;
   deckName: string;
-  deckLanguage: string;
   onGoHome: () => void;
   onReviewComplete: () => void;
   onKeepStudying: () => void;
@@ -35,7 +35,6 @@ interface SingleDeckReviewProps {
 export const SingleDeckReview = ({
   deckId,
   deckName,
-  deckLanguage,
   onGoHome,
   onReviewComplete,
   onKeepStudying,
@@ -49,9 +48,7 @@ export const SingleDeckReview = ({
   const [isTtsPlaying, setIsTtsPlaying] = useState(false);
   const [error, setError] = useState<string>();
   const cardStartTimeRef = useRef<number | null>(null);
-  const audioPlayerRef = useRef<AudioPlayer | null>(null);
-  const temporaryAudioUriRef = useRef<string | null>(null);
-  const webAudioUrlRef = useRef<string | null>(null);
+  const audioPlayersRef = useRef<Map<string, AudioPlayer>>(new Map());
   const { exitReviewSessionSignal } = useReviewSession();
 
   const difficultyOptions = [
@@ -119,34 +116,31 @@ export const SingleDeckReview = ({
     }
   }, [exitReviewSessionSignal, currentCardIndex, isReviewComplete]);
 
-  const removeTempAudio = useCallback(async () => {
-    if (audioPlayerRef.current) {
-      audioPlayerRef.current.remove();
-      audioPlayerRef.current = null;
-    }
-
-    if (temporaryAudioUriRef.current) {
-      try {
-        await FileSystem.deleteAsync(temporaryAudioUriRef.current, {
-          idempotent: true,
-        });
-      } catch (fileDeleteError) {
-        console.log("Failed to delete temporary TTS file:", fileDeleteError);
+  const getAuthToken = useCallback(async (): Promise<string | null> => {
+    try {
+      const userData = await storage.getItem("user");
+      if (!userData) {
+        return null;
       }
-      temporaryAudioUriRef.current = null;
-    }
 
-    if (webAudioUrlRef.current) {
-      URL.revokeObjectURL(webAudioUrlRef.current);
-      webAudioUrlRef.current = null;
+      const user = JSON.parse(userData) as { token?: string };
+      return user.token ?? null;
+    } catch (storageError) {
+      console.log("Failed to read auth token:", storageError);
+      return null;
     }
   }, []);
 
   useEffect(() => {
+    const players = audioPlayersRef.current;
+
     return () => {
-      void removeTempAudio();
+      players.forEach((player) => {
+        player.remove();
+      });
+      players.clear();
     };
-  }, [removeTempAudio]);
+  }, []);
 
   const totalCards = cards.length;
   const currentCard = cards[currentCardIndex];
@@ -156,121 +150,112 @@ export const SingleDeckReview = ({
     (isFrontSide ? currentCard.word_audio : currentCard.trans_audio),
   );
 
-  const normalizeLanguageCode = (languageCode: string): string => {
-    const normalized = languageCode.trim().toLowerCase().replace("_", "-");
-    const languageAliases: Record<string, string> = {
-      zh: "zh-cn",
-      cn: "zh-cn",
-      ptbr: "pt",
-      "pt-br": "pt",
-      kr: "ko",
+  const getOrCreateAudioPlayer = useCallback(
+    async (objectId: string) => {
+      const existingPlayer = audioPlayersRef.current.get(objectId);
+      if (existingPlayer) {
+        return existingPlayer;
+      }
+
+      const token = await getAuthToken();
+      if (!token) {
+        return null;
+      }
+
+      const player = createAudioPlayer(
+        {
+          uri: buildAudioUrl(objectId),
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+        {
+          downloadFirst: true,
+        },
+      );
+
+      player.addListener("playbackStatusUpdate", (status) => {
+        if (status.isLoaded && status.didJustFinish) {
+          setIsTtsPlaying(false);
+        }
+      });
+
+      audioPlayersRef.current.set(objectId, player);
+      return player;
+    },
+    [getAuthToken],
+  );
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    const preloadAudio = async () => {
+      const token = await getAuthToken();
+      if (!token || cards.length === 0) {
+        return;
+      }
+
+      const audioIds = cards
+        .flatMap((card) => [card.word_audio, card.trans_audio])
+        .filter((objectId): objectId is string => Boolean(objectId));
+
+      for (const objectId of audioIds) {
+        if (isCancelled || audioPlayersRef.current.has(objectId)) {
+          continue;
+        }
+
+        const player = createAudioPlayer(
+          {
+            uri: buildAudioUrl(objectId),
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+          {
+            downloadFirst: true,
+          },
+        );
+
+        player.addListener("playbackStatusUpdate", (status) => {
+          if (status.isLoaded && status.didJustFinish) {
+            setIsTtsPlaying(false);
+          }
+        });
+
+        audioPlayersRef.current.set(objectId, player);
+      }
     };
-    const supportedLanguages = new Set([
-      "en",
-      "es",
-      "fr",
-      "de",
-      "it",
-      "pt",
-      "pl",
-      "tr",
-      "ru",
-      "nl",
-      "cs",
-      "ar",
-      "zh-cn",
-      "ja",
-      "hu",
-      "ko",
-      "hi",
-    ]);
 
-    const mappedLanguage = languageAliases[normalized] ?? normalized;
-    return supportedLanguages.has(mappedLanguage) ? mappedLanguage : "en";
-  };
+    void preloadAudio();
 
-  const blobToBase64 = (blob: Blob): Promise<string> =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onerror = () => reject(new Error("Failed to read audio data"));
-      reader.onloadend = () => {
-        const result = reader.result;
-        if (typeof result !== "string") {
-          reject(new Error("Failed to parse audio data"));
-          return;
-        }
+    return () => {
+      isCancelled = true;
+    };
+  }, [cards, getAuthToken]);
 
-        const base64Data = result.split(",")[1];
-        if (!base64Data) {
-          reject(new Error("Invalid audio payload"));
-          return;
-        }
-
-        resolve(base64Data);
-      };
-      reader.readAsDataURL(blob);
-    });
-
-  const playTts = useCallback(async () => {
-    if (!currentCard?.word || isTtsPlaying) {
+  const playAudioForCurrentSide = useCallback(async () => {
+    const objectId = currentCard
+      ? isFrontSide
+        ? (currentCard.word_audio ?? null)
+        : (currentCard.trans_audio ?? null)
+      : null;
+    if (!objectId || isTtsPlaying) {
       return;
     }
 
     setIsTtsPlaying(true);
 
     try {
-      await removeTempAudio();
       await setAudioModeAsync({
         playsInSilentMode: true,
       });
 
-      const { data, error: ttsError } = await generateSpeechAudio({
-        text: currentCard.word,
-        language: normalizeLanguageCode(deckLanguage),
-      });
+      const player = await getOrCreateAudioPlayer(objectId);
 
-      if (ttsError || !data) {
-        throw new Error(ttsError ?? "Failed to generate speech");
+      if (!player) {
+        throw new Error("Audio is unavailable");
       }
 
-      let sourceUri: string;
-
-      if (Platform.OS === "web") {
-        const blob = await data.blob();
-        sourceUri = URL.createObjectURL(blob);
-        webAudioUrlRef.current = sourceUri;
-      } else {
-        const blob = await data.blob();
-        const audioBase64 = await blobToBase64(blob);
-        const baseDir =
-          (FileSystem.cacheDirectory as string | undefined) ??
-          (FileSystem.documentDirectory as string | undefined) ??
-          "";
-
-        if (!baseDir) {
-          throw new Error("Unable to access local storage for audio playback");
-        }
-
-        sourceUri = `${baseDir}tts-${currentCard.c_id}-${Date.now()}.wav`;
-        await FileSystem.writeAsStringAsync(sourceUri, audioBase64, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
-        temporaryAudioUriRef.current = sourceUri;
-      }
-
-      const player = createAudioPlayer({ uri: sourceUri });
-      audioPlayerRef.current = player;
-
-      player.addListener("playbackStatusUpdate", (status) => {
-        if (!status.isLoaded) {
-          return;
-        }
-
-        if (status.didJustFinish) {
-          setIsTtsPlaying(false);
-          void removeTempAudio();
-        }
-      });
       player.play();
     } catch (playbackError) {
       const message =
@@ -279,9 +264,8 @@ export const SingleDeckReview = ({
           : "Failed to play speech";
       console.log(message);
       setIsTtsPlaying(false);
-      await removeTempAudio();
     }
-  }, [currentCard, deckLanguage, isTtsPlaying, removeTempAudio]);
+  }, [currentCard, getOrCreateAudioPlayer, isFrontSide, isTtsPlaying]);
 
   const handleCardPress = () => {
     if (isFrontSide) {
@@ -483,7 +467,7 @@ export const SingleDeckReview = ({
                   }}
                   onPress={(event) => {
                     event.stopPropagation();
-                    void playTts();
+                    void playAudioForCurrentSide();
                   }}
                 >
                   {isTtsPlaying ? (

@@ -14,7 +14,6 @@ import { ActivityIndicator, ScrollView, View } from "react-native";
 interface FocusedReviewDeck {
   d_id: string;
   deck_name: string;
-  word_lang: string;
 }
 
 export default function Revision() {
@@ -75,19 +74,13 @@ export default function Revision() {
       return;
     }
 
-    const routeDeck = decksList.find(
-      (deck) => String(deck.d_id) === String(routeDeckId),
-    );
-
     setFocusedDeck({
       d_id: routeDeckId,
       deck_name: routeDeckName,
-      word_lang: routeDeck?.word_lang ?? "en",
     });
     setIsReviewSessionActive(true);
     router.replace("/(tabs)/revision");
   }, [
-    decksList,
     focusedDeck,
     routeDeckId,
     routeDeckName,
@@ -135,7 +128,6 @@ export default function Revision() {
             setFocusedDeck({
               d_id: deck.d_id,
               deck_name: deck.deck_name,
-              word_lang: deck.word_lang,
             });
             setIsReviewSessionActive(true);
           }}
@@ -151,7 +143,6 @@ export default function Revision() {
           <SingleDeckReview
             deckId={focusedDeck.d_id}
             deckName={focusedDeck.deck_name}
-            deckLanguage={focusedDeck.word_lang}
             onReviewComplete={() => {
               setFocusedDeck(undefined);
               setIsReviewSessionActive(false);
