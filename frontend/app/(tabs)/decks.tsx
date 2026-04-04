@@ -2,8 +2,7 @@ import { deleteDeck, getDecks } from "@/apis/endpoints/decks";
 import { NoDecksBanner } from "@/components/features/decks/NoDecksBanner";
 import { Pressable, ScrollView, View } from "react-native";
 import { Deck } from "@/types/decks";
-import { useEffect, useState, useRef, useCallback } from "react";
-import { useFocusEffect } from "@react-navigation/native";
+import { useEffect, useState } from "react";
 import { DeckPreview } from "@/components/features/decks/DeckPreview";
 import { PlusFilledIcon } from "@/assets/icons/PlusFilledIcon";
 import { COLORS } from "@/constants/colors";
@@ -26,41 +25,20 @@ export default function Decks() {
   const [deleteDeckError, setDeleteDeckError] = useState<string>();
   const pathname = usePathname();
   const { getLanguageName } = useLanguageOptions();
-  const screenStart = useRef(Date.now());
-  const hasMarked = useRef(false);
 
-  const getAllDecks = useCallback(async () => {
+  const getAllDecks = async () => {
     const { data, error } = await getDecks();
 
     setDecks(data.decks);
     if (error) {
       console.log(error);
     }
-  }, []);
-
-  // Mark interactive once decks are loaded
-  useEffect(() => {
-    if (decks.length > 0 && !hasMarked.current) {
-      const tti = Date.now() - screenStart.current;
-      console.log(`[PERF] DecksScreen TTI: ${tti}ms`);
-      hasMarked.current = true;
-    }
-  }, [decks]);
-
-  useFocusEffect(
-    useCallback(() => {
-      screenStart.current = Date.now();
-      hasMarked.current = false;
-      setFocusedDeckId(undefined);
-      getAllDecks();
-    }, [getAllDecks]),
-  );
+  };
 
   useEffect(() => {
-    if (isCreateOrImportDeckModalOpen === false) {
-      getAllDecks();
-    }
-  }, [isCreateOrImportDeckModalOpen, getAllDecks]);
+    setFocusedDeckId(undefined);
+    getAllDecks();
+  }, [isCreateOrImportDeckModalOpen, pathname]);
 
   const handleDeleteDeck = async (deckId: string) => {
     if (isDeletingDeck) {
