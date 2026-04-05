@@ -49,6 +49,7 @@ export const SingleDeckReview = ({
   const [error, setError] = useState<string>();
   const cardStartTimeRef = useRef<number | null>(null);
   const audioPlayersRef = useRef<Map<string, AudioPlayer>>(new Map());
+  const reviewStartTimeRef = useRef<number | null>(null);
   const { exitReviewSessionSignal } = useReviewSession();
 
   const difficultyOptions = [
@@ -79,6 +80,7 @@ export const SingleDeckReview = ({
   ];
 
   const getCardsToReview = useCallback(async () => {
+    reviewStartTimeRef.current = Date.now();
     setIsLoading(true);
     setError(undefined);
 

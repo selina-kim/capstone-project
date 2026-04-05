@@ -69,8 +69,10 @@ export const CreateNewCardModal = ({
   const [exampleError, setExampleError] = useState<string>();
   const [imageError, setImageError] = useState<string>();
 
-  const sourceLanguageName = getLanguageName(translationLanguageCode);
-  const targetLanguageName = getLanguageName(wordLanguageCode);
+  const sourceLanguageName = getLanguageName(
+    translationLanguageCode,
+  ).toUpperCase();
+  const targetLanguageName = getLanguageName(wordLanguageCode).toUpperCase();
 
   const {
     wordPlaceholder,
@@ -450,13 +452,13 @@ export const CreateNewCardModal = ({
       >
         <CTextInput
           label="Word"
-          sublabel={sourceLanguageName.toUpperCase()}
+          sublabel={sourceLanguageName}
           value={sourceWord}
           onChangeText={setSourceWord}
           placeholder={wordPlaceholder}
         />
         <CTextInput
-          sublabel={targetLanguageName.toUpperCase()}
+          sublabel={targetLanguageName}
           value={targetWord}
           onChangeText={setTargetWord}
           placeholder={translationPlaceholder}
@@ -471,13 +473,13 @@ export const CreateNewCardModal = ({
         />
         <CTextInput
           label="Example"
-          sublabel={sourceLanguageName.toUpperCase()}
+          sublabel={sourceLanguageName}
           value={sourceExample}
           onChangeText={setSourceExample}
           placeholder={exampleSourcePlaceholder}
         />
         <CTextInput
-          sublabel={targetLanguageName.toUpperCase()}
+          sublabel={targetLanguageName}
           value={targetExample}
           onChangeText={setTargetExample}
           placeholder={exampleTargetPlaceholder}
