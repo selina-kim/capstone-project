@@ -3,7 +3,10 @@
 ```
 backend/
 ├── src/
-│   ...
+│   ├── routes/            # flask route handlers
+│   ├── services/          # business logic and external API calls
+│   ├── tests/             # unit and integration tests
+│   ├── db.py             # database connection and helper functions
 │   └── main.py          # flask application entry point
 ├── Dockerfile           # docker configuration
 ├── poetry.lock          # package manager dependencies
