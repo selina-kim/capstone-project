@@ -2,7 +2,7 @@ import { deleteDeck, getDecks } from "@/apis/endpoints/decks";
 import { NoDecksBanner } from "@/components/features/decks/NoDecksBanner";
 import { Pressable, ScrollView, View } from "react-native";
 import { Deck } from "@/types/decks";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { DeckPreview } from "@/components/features/decks/DeckPreview";
 import { PlusFilledIcon } from "@/assets/icons/PlusFilledIcon";
 import { COLORS } from "@/constants/colors";
@@ -15,6 +15,7 @@ import { Modal } from "@/components/common/Modal";
 import { CText } from "@/components/common/CText";
 import { CreateOrImportDeckModal } from "@/components/features/decks/CreateOrImportDeckModal";
 import { ImportDeckModal } from "@/components/features/decks/ImportDeckModal";
+import { useFocusEffect } from "@react-navigation/native";
 export default function Decks() {
   const [decks, setDecks] = useState<Deck[]>([]);
   const [isCreateOrImportDeckModalOpen, setIsCreateOrImportDeckModalOpen] =
@@ -41,9 +42,16 @@ export default function Decks() {
     }
   };
 
+  useFocusEffect(
+    useCallback(() => {
+      getAllDecks();
+    }, []),
+  );
+
   useEffect(() => {
     if (params.resetList) {
       setFocusedDeckId(undefined);
+      getAllDecks();
       return;
     }
 
