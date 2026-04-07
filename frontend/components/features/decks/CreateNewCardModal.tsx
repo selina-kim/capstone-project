@@ -73,6 +73,8 @@ export const CreateNewCardModal = ({
     translationLanguageCode,
   ).toUpperCase();
   const targetLanguageName = getLanguageName(wordLanguageCode).toUpperCase();
+  const sourceLanguageCode = translationLanguageCode.trim().toUpperCase();
+  const targetLanguageCode = wordLanguageCode.trim().toUpperCase();
 
   const {
     wordPlaceholder,
@@ -80,6 +82,9 @@ export const CreateNewCardModal = ({
     exampleSourcePlaceholder,
     exampleTargetPlaceholder,
   } = getPlaceholdersForLanguages(translationLanguageCode, wordLanguageCode);
+
+  const isEnglishCode = (code: string) =>
+    code === "EN" || code.startsWith("EN-");
 
   const onSubmitCard = async () => {
     if (isSavingCard) {
@@ -332,7 +337,15 @@ export const CreateNewCardModal = ({
 
     setImageError(undefined);
 
-    const imageQuery = targetWord.trim() || sourceWord.trim();
+    const sourceTerm = sourceWord.trim();
+    const targetTerm = targetWord.trim();
+
+    // Prefer the English term for image search, with fallback to the other term.
+    const imageQuery = isEnglishCode(sourceLanguageCode)
+      ? sourceTerm || targetTerm
+      : isEnglishCode(targetLanguageCode)
+        ? targetTerm || sourceTerm
+        : targetTerm || sourceTerm;
 
     if (imageQuery === "") {
       setImageError("The word(s) cannot be empty");
